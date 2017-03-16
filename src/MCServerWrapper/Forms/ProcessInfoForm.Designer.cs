@@ -28,10 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.MemChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.RamLbl = new System.Windows.Forms.Label();
             this.CpuLbl = new System.Windows.Forms.Label();
@@ -49,13 +49,13 @@
             this.MemChart.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            chartArea3.Name = "ChartArea1";
-            this.MemChart.ChartAreas.Add(chartArea3);
+            chartArea1.Name = "ChartArea1";
+            this.MemChart.ChartAreas.Add(chartArea1);
             this.MemChart.Location = new System.Drawing.Point(6, 19);
             this.MemChart.Name = "MemChart";
-            series3.ChartArea = "ChartArea1";
-            series3.Name = "Series1";
-            this.MemChart.Series.Add(series3);
+            series1.ChartArea = "ChartArea1";
+            series1.Name = "Series1";
+            this.MemChart.Series.Add(series1);
             this.MemChart.Size = new System.Drawing.Size(426, 237);
             this.MemChart.TabIndex = 5;
             this.MemChart.Text = "chart1";
@@ -98,13 +98,13 @@
             this.CpuChart.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            chartArea4.Name = "ChartArea1";
-            this.CpuChart.ChartAreas.Add(chartArea4);
+            chartArea2.Name = "ChartArea1";
+            this.CpuChart.ChartAreas.Add(chartArea2);
             this.CpuChart.Location = new System.Drawing.Point(6, 19);
             this.CpuChart.Name = "CpuChart";
-            series4.ChartArea = "ChartArea1";
-            series4.Name = "Series1";
-            this.CpuChart.Series.Add(series4);
+            series2.ChartArea = "ChartArea1";
+            series2.Name = "Series1";
+            this.CpuChart.Series.Add(series2);
             this.CpuChart.Size = new System.Drawing.Size(426, 237);
             this.CpuChart.TabIndex = 8;
             this.CpuChart.Text = "chart1";
@@ -132,7 +132,7 @@
             this.Controls.Add(this.GpuGbx);
             this.Controls.Add(this.CpuGbx);
             this.Name = "ProcessInfoForm";
-            this.Text = "ProcessInfoForm";
+            this.Text = "Server Info";
             this.Load += new System.EventHandler(this.ProcessInfoForm_Load);
             this.Resize += new System.EventHandler(this.ProcessInfoForm_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.MemChart)).EndInit();
