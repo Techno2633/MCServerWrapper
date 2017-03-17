@@ -287,6 +287,7 @@ namespace MCServerWrapperSettingsApp.Forms
                     WrapperColor = (ConsoleColor)ConsoleColorCbo.SelectedItem,
                     ZipCompressionLevel = CurrentSettings.ZipCompressionLevel,
                     ShowCpuRamUsage = ShowRamCpuUsage.Checked,
+                    LaunchFlags = LaunchFlags.Text,
                 };
 
                 try

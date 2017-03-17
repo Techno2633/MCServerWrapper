@@ -49,11 +49,13 @@
             this.BackupNumber = new System.Windows.Forms.NumericUpDown();
             this.Prompt7 = new System.Windows.Forms.Label();
             this.GenSettings = new System.Windows.Forms.Button();
-            this.Prompt10 = new System.Windows.Forms.Label();
+            this.Prompt11 = new System.Windows.Forms.Label();
             this.ConsoleColorCbo = new System.Windows.Forms.ComboBox();
             this.CompressionLevelCbo = new System.Windows.Forms.ComboBox();
             this.Prompt9 = new System.Windows.Forms.Label();
             this.ShowRamCpuUsage = new System.Windows.Forms.CheckBox();
+            this.Prompt10 = new System.Windows.Forms.Label();
+            this.LaunchFlags = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.MaxRamSlider)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MinRamSlider)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BackupInterval)).BeginInit();
@@ -284,7 +286,7 @@
             // GenSettings
             // 
             this.GenSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.GenSettings.Location = new System.Drawing.Point(278, 350);
+            this.GenSettings.Location = new System.Drawing.Point(278, 377);
             this.GenSettings.Name = "GenSettings";
             this.GenSettings.Size = new System.Drawing.Size(116, 23);
             this.GenSettings.TabIndex = 31;
@@ -292,21 +294,21 @@
             this.GenSettings.UseVisualStyleBackColor = true;
             this.GenSettings.Click += new System.EventHandler(this.GenSettings_Click);
             // 
-            // Prompt10
+            // Prompt11
             // 
-            this.Prompt10.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.Prompt10.AutoSize = true;
-            this.Prompt10.Location = new System.Drawing.Point(12, 355);
-            this.Prompt10.Name = "Prompt10";
-            this.Prompt10.Size = new System.Drawing.Size(113, 13);
-            this.Prompt10.TabIndex = 29;
-            this.Prompt10.Text = "Wrapper Console Text";
+            this.Prompt11.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.Prompt11.AutoSize = true;
+            this.Prompt11.Location = new System.Drawing.Point(12, 381);
+            this.Prompt11.Name = "Prompt11";
+            this.Prompt11.Size = new System.Drawing.Size(113, 13);
+            this.Prompt11.TabIndex = 29;
+            this.Prompt11.Text = "Wrapper Console Text";
             // 
             // ConsoleColorCbo
             // 
             this.ConsoleColorCbo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.ConsoleColorCbo.FormattingEnabled = true;
-            this.ConsoleColorCbo.Location = new System.Drawing.Point(131, 352);
+            this.ConsoleColorCbo.Location = new System.Drawing.Point(131, 378);
             this.ConsoleColorCbo.Name = "ConsoleColorCbo";
             this.ConsoleColorCbo.Size = new System.Drawing.Size(128, 21);
             this.ConsoleColorCbo.TabIndex = 30;
@@ -342,16 +344,37 @@
             this.ShowRamCpuUsage.Text = "Show RAM and CPU Usage";
             this.ShowRamCpuUsage.UseVisualStyleBackColor = true;
             // 
+            // Prompt10
+            // 
+            this.Prompt10.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.Prompt10.AutoSize = true;
+            this.Prompt10.Location = new System.Drawing.Point(12, 355);
+            this.Prompt10.Name = "Prompt10";
+            this.Prompt10.Size = new System.Drawing.Size(105, 13);
+            this.Prompt10.TabIndex = 36;
+            this.Prompt10.Text = "Server Launch Flags";
+            // 
+            // LaunchFlags
+            // 
+            this.LaunchFlags.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.LaunchFlags.Location = new System.Drawing.Point(123, 352);
+            this.LaunchFlags.Name = "LaunchFlags";
+            this.LaunchFlags.Size = new System.Drawing.Size(271, 20);
+            this.LaunchFlags.TabIndex = 29;
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(406, 385);
+            this.ClientSize = new System.Drawing.Size(406, 411);
+            this.Controls.Add(this.LaunchFlags);
+            this.Controls.Add(this.Prompt10);
             this.Controls.Add(this.ShowRamCpuUsage);
             this.Controls.Add(this.Prompt9);
             this.Controls.Add(this.CompressionLevelCbo);
             this.Controls.Add(this.ConsoleColorCbo);
-            this.Controls.Add(this.Prompt10);
+            this.Controls.Add(this.Prompt11);
             this.Controls.Add(this.GenSettings);
             this.Controls.Add(this.BackupNumber);
             this.Controls.Add(this.Prompt7);
@@ -373,7 +396,7 @@
             this.Controls.Add(this.BrowseServerPath);
             this.Controls.Add(this.ServerPath);
             this.Controls.Add(this.Prompt1);
-            this.MinimumSize = new System.Drawing.Size(422, 424);
+            this.MinimumSize = new System.Drawing.Size(422, 450);
             this.Name = "Main";
             this.ShowIcon = false;
             this.Text = "MC Server Wrapper Setting Generator";
@@ -409,10 +432,12 @@
         private System.Windows.Forms.NumericUpDown BackupNumber;
         private System.Windows.Forms.Label Prompt7;
         private System.Windows.Forms.Button GenSettings;
-        private System.Windows.Forms.Label Prompt10;
+        private System.Windows.Forms.Label Prompt11;
         private System.Windows.Forms.ComboBox ConsoleColorCbo;
         private System.Windows.Forms.ComboBox CompressionLevelCbo;
         private System.Windows.Forms.Label Prompt9;
         private System.Windows.Forms.CheckBox ShowRamCpuUsage;
+        private System.Windows.Forms.Label Prompt10;
+        private System.Windows.Forms.TextBox LaunchFlags;
     }
 }

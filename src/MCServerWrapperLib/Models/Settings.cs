@@ -21,6 +21,7 @@ namespace MCServerWrapperLib.Models
         public ConsoleColor WrapperColor;
         public int ZipCompressionLevel;
         public bool ShowCpuRamUsage;
+        public string LaunchFlags;
 
         public Settings()
         {
@@ -35,6 +36,7 @@ namespace MCServerWrapperLib.Models
             WrapperColor = ConsoleColor.Yellow;
             ZipCompressionLevel = 6;
             ShowCpuRamUsage = true;
+            LaunchFlags = "";
         }
     }
 }

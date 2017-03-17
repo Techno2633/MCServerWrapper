@@ -152,12 +152,15 @@ namespace MCServerWrapper.Classes
             ConsoleWriter.WriteLine($"Max RAM: {settings.MaxRam}", consoleColor);
             ConsoleWriter.WriteLine($"Backup Interval: {settings.BackupInterval} minutes", consoleColor);
             ConsoleWriter.WriteLine($"Number of Backups: {settings.BackupNumber}", consoleColor);
+            ConsoleWriter.WriteLine($"Backup Compression Level: {settings.ZipCompressionLevel}", consoleColor);
             ConsoleWriter.WriteLine($"Backup Source: {settings.BackupSource}", consoleColor);
             ConsoleWriter.WriteLine($"Backup Destination: {settings.BackupLocation}", consoleColor);
+            ConsoleWriter.WriteLine($"Show CPU and RAM Usage: {settings.ShowCpuRamUsage}", consoleColor);
+            ConsoleWriter.WriteLine($"Launch Flags: {settings.LaunchFlags}", consoleColor);
 
             //initializes the process
             process = new Process();
-            process.StartInfo = new ProcessStartInfo("java", $"-Xms{settings.MinRam}M -Xmx{settings.MaxRam}M -jar {settings.ServerPath} nogui")
+            process.StartInfo = new ProcessStartInfo("java", $"-Xms{settings.MinRam}M -Xmx{settings.MaxRam}M {settings.LaunchFlags} -jar {settings.ServerPath} nogui")
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,
