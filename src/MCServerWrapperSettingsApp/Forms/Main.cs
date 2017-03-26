@@ -69,33 +69,35 @@ namespace MCServerWrapperSettingsApp.Forms
                 return;
             }
 
-            try
-            {
-                if (!File.Exists(@"Wrapper\Settings.json"))
-                {
-                    string json = JsonConvert.SerializeObject(new Settings(), Formatting.Indented);
-                    File.WriteAllText(@"Wrapper\Settings.json", json);
-                }
-            }
-            catch (Exception ex)
-            {
-                ExceptionMessage.PrintException(ex, "Failed to create Settings.json");
-                return;
-            }
+            //try
+            //{
+            //    if (!File.Exists(@"Wrapper\Settings.json"))
+            //    {
+            //        string json = JsonConvert.SerializeObject(new Settings(), Formatting.Indented);
+            //        File.WriteAllText(@"Wrapper\Settings.json", json);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    ExceptionMessage.PrintException(ex, "Failed to create Settings.json");
+            //    return;
+            //}
 
-            try
-            {
-                if (File.Exists(@"Wrapper\Settings.json"))
-                {
-                    string json = File.ReadAllText(@"Wrapper\Settings.json");
-                    CurrentSettings = JsonConvert.DeserializeObject<Settings>(json);
-                }
-            }
-            catch (Exception ex)
-            {
-                ExceptionMessage.PrintException(ex, "Failed to read Settings.json");
-                return;
-            }
+            //try
+            //{
+            //    if (File.Exists(@"Wrapper\Settings.json"))
+            //    {
+            //        string json = File.ReadAllText(@"Wrapper\Settings.json");
+            //        CurrentSettings = JsonConvert.DeserializeObject<Settings>(json);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    ExceptionMessage.PrintException(ex, "Failed to read Settings.json");
+            //    return;
+            //}
+
+            CurrentSettings = new Settings();
 
             ServerPath.Text = CurrentSettings.ServerPath;
             MinRamSlider.Value = CurrentSettings.MinRam / 256;
@@ -138,11 +140,11 @@ namespace MCServerWrapperSettingsApp.Forms
             if (minSlider && MinRamSlider.Value > MaxRamSlider.Value)
                 MaxRamSlider.Value = MinRamSlider.Value;
 
-            MinRamText.Text = (MinRamSlider.Value * 256) + " MB";
 
             if (!minSlider && MinRamSlider.Value > MaxRamSlider.Value)
                 MinRamSlider.Value = MaxRamSlider.Value;
 
+            MinRamText.Text = (MinRamSlider.Value * 256) + " MB";
             MaxRamText.Text = (MaxRamSlider.Value * 256) + " MB";
         }
 
@@ -250,15 +252,18 @@ namespace MCServerWrapperSettingsApp.Forms
                 MessageBox.Show("The server file path contains invalid characters.\nPlease remove all invalid characters.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
-            if (!Directory.Exists(BackupSource.Text))
+            if (!FindBackupSource.Checked)
             {
-                MessageBox.Show("The backup source directory cannot be found or does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                if (!Directory.Exists(BackupSource.Text))
+                {
+                    MessageBox.Show("The backup source directory cannot be found or does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
-            if (BackupSource.Text.IndexOfAny(invalidChars) != -1)
-            {
-                MessageBox.Show("The backup source directory path contains invalid characters.\nPlease remove all invalid characters.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (BackupSource.Text.IndexOfAny(invalidChars) != -1)
+                {
+                    MessageBox.Show("The backup source directory path contains invalid characters.\nPlease remove all invalid characters.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
 
             if (!Directory.Exists(BackupLocation.Text))
@@ -272,51 +277,44 @@ namespace MCServerWrapperSettingsApp.Forms
                 MessageBox.Show("The backup location directory path contains invalid characters.\nPlease remove all invalid characters.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
+            Settings newSettings = new Settings()
+            {
+                ServerPath = ServerPath.Text,
+                MinRam = MinRamSlider.Value * 256,
+                MaxRam = MaxRamSlider.Value * 256,
+                SameMaxMin = SameMaxMin.Checked,
+                BackupSource = BackupSource.Text,
+                BackupLocation = BackupLocation.Text,
+                BackupInterval = (int)BackupInterval.Value,
+                BackupNumber = (int)BackupNumber.Value,
+                WrapperColor = (ConsoleColor)ConsoleColorCbo.SelectedItem,
+                ZipCompressionLevel = CurrentSettings.ZipCompressionLevel,
+                ShowCpuRamUsage = ShowRamCpuUsage.Checked,
+                LaunchFlags = LaunchFlags.Text,
+                AutoFindBackupSource = FindBackupSource.Checked,
+            };
+
             try
             {
-                Settings newSettings = new Settings()
+                if (File.Exists(@"Wrapper\Settings.json"))
                 {
-                    ServerPath = ServerPath.Text,
-                    MinRam = MinRamSlider.Value * 256,
-                    MaxRam = MaxRamSlider.Value * 256,
-                    SameMaxMin = SameMaxMin.Checked,
-                    BackupSource = BackupSource.Text,
-                    BackupLocation = BackupLocation.Text,
-                    BackupInterval = (int)BackupInterval.Value,
-                    BackupNumber = (int)BackupNumber.Value,
-                    WrapperColor = (ConsoleColor)ConsoleColorCbo.SelectedItem,
-                    ZipCompressionLevel = CurrentSettings.ZipCompressionLevel,
-                    ShowCpuRamUsage = ShowRamCpuUsage.Checked,
-                    LaunchFlags = LaunchFlags.Text,
-                };
-
-                try
-                {
-                    if (File.Exists(@"Wrapper\Settings.json"))
-                    {
-                        File.Delete(@"Wrapper\Settings.json");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ExceptionMessage.PrintException(ex, "Error deleting Settings.json while generating new Settings.json.");
-                    return;
-                }
-
-                try
-                {
-                    string json = JsonConvert.SerializeObject(newSettings, Formatting.Indented);
-                    File.WriteAllText(@"Wrapper\Settings.json", json);
-                }
-                catch (Exception ex)
-                {
-                    ExceptionMessage.PrintException(ex, "Error creating Settings.json while generating new Settings.json.");
-                    return;
+                    File.Delete(@"Wrapper\Settings.json");
                 }
             }
             catch (Exception ex)
             {
-                ExceptionMessage.PrintException(ex, "Error saving new Settings.json");
+                ExceptionMessage.PrintException(ex, "Error deleting old Settings.json while generating new Settings.json.");
+                return;
+            }
+
+            try
+            {
+                string json = JsonConvert.SerializeObject(newSettings, Formatting.Indented);
+                File.WriteAllText(@"Wrapper\Settings.json", json);
+            }
+            catch (Exception ex)
+            {
+                ExceptionMessage.PrintException(ex, "Error creating Settings.json while generating new Settings.json.");
                 return;
             }
 

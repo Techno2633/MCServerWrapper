@@ -21,11 +21,11 @@ namespace MCServerWrapper.Classes
         private static ConcurrentQueue<string> backups;
         private static Settings settings;
         private static Process process;
-        private static ConsoleColor consoleColor;
+        private static ConsoleColor consoleColor = ConsoleColor.Yellow;
 
         private static ConsoleEventDelegate handler;
 
-        private static ProcessInfoForm processInfoForm;
+        //private static ProcessInfoForm processInfoForm;
 
         public ServerProgram()
         {
@@ -109,12 +109,12 @@ namespace MCServerWrapper.Classes
                 if (!File.Exists(@"Wrapper\Settings.json"))
                 {
                     int counter = 0;
-                    while (!CheckWrapperSettings() && counter > 5)
+                    while (!CheckWrapperSettings() && counter < 4)
                     {
                         counter++;
                     }
 
-                    if (counter > 5)
+                    if (counter >= 4)
                     {
                         throw new Exception("Unable to create Settings.json after 5 tries");
                     }
@@ -134,9 +134,18 @@ namespace MCServerWrapper.Classes
             consoleColor = settings.WrapperColor;
 
             //Checks if the server application and server wrapper are in the same directory
-            if (Environment.CurrentDirectory != Path.GetDirectoryName(settings.ServerPath))
+            try
             {
-                ExceptionPrinter.PrintException(new Exception("Server application is not in the same directory as the wrapper.\nPlease put the server wrapper in the same directory as the server file."));
+                if (Environment.CurrentDirectory != Path.GetDirectoryName(settings.ServerPath))
+                {
+                    ExceptionPrinter.PrintException(new Exception("Server application is not in the same directory as the wrapper.\nPlease put the server wrapper in the same directory as the server file."));
+                    Close(10);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionPrinter.PrintException(ex, "Error checking server path and wrapper path");
                 Close(10);
                 return;
             }
@@ -148,8 +157,8 @@ namespace MCServerWrapper.Classes
             //Writes starting info to the console
             ConsoleWriter.WriteLine($"Starting", consoleColor);
             ConsoleWriter.WriteLine($"Program Source {settings.ServerPath}", consoleColor);
-            ConsoleWriter.WriteLine($"Min RAM: {settings.MinRam}", consoleColor);
-            ConsoleWriter.WriteLine($"Max RAM: {settings.MaxRam}", consoleColor);
+            ConsoleWriter.WriteLine($"Min RAM: {settings.MinRam}MB", consoleColor);
+            ConsoleWriter.WriteLine($"Max RAM: {settings.MaxRam}MB", consoleColor);
             ConsoleWriter.WriteLine($"Backup Interval: {settings.BackupInterval} minutes", consoleColor);
             ConsoleWriter.WriteLine($"Number of Backups: {settings.BackupNumber}", consoleColor);
             ConsoleWriter.WriteLine($"Backup Compression Level: {settings.ZipCompressionLevel}", consoleColor);
@@ -206,7 +215,7 @@ namespace MCServerWrapper.Classes
             //Thread that handles the backing up of the server
             Thread BackupThread = new Thread(() =>
             {
-                while (MainProcess.ThreadState != System.Threading.ThreadState.Stopped)
+                while (!process.HasExited)
                 {
                     Thread.Sleep(settings.BackupInterval * 60000);
                     try
@@ -217,7 +226,7 @@ namespace MCServerWrapper.Classes
                         while (!Backup())
                         {
                             counter++;
-                            if (counter > 20)
+                            if (counter > 19)
                             {
                                 throw new Exception("Unable to complete backup after 20 tries");
                             }
@@ -242,18 +251,12 @@ namespace MCServerWrapper.Classes
             //Form Thread
             Thread FormStartupThread = new Thread(() =>
             {
-                processInfoForm = new ProcessInfoForm(settings.MaxRam);
-
-                Thread FormUpdateThread = new Thread(() => FormUpdate(processInfoForm))
+                while (!process.HasExited)
                 {
-                    IsBackground = true,
-                    Name = "FormUpdateThread",
-                    Priority = ThreadPriority.Normal,
-                };
-
-                FormUpdateThread.Start();
-                Application.Run(processInfoForm);
-                FormUpdateThread.Abort();
+                    ProcessInfoForm processInfoForm = new ProcessInfoForm(process);
+                    Application.Run(processInfoForm);
+                    Thread.Sleep(1000);
+                }
             })
             {
                 IsBackground = true,
@@ -262,24 +265,29 @@ namespace MCServerWrapper.Classes
             };
             FormStartupThread.TrySetApartmentState(ApartmentState.STA);
 
+            
+
             //pre-start backup
-            try
+            if (!settings.AutoFindBackupSource)
             {
-                ConsoleWriter.WriteLine("Starting pre-start backup", consoleColor);
-                int counter = 0;
-                while (!Backup())
+                try
                 {
-                    counter++;
-                    if (counter > 20)
+                    ConsoleWriter.WriteLine("Starting pre-start backup", consoleColor);
+                    int counter = 0;
+                    while (!Backup())
                     {
-                        throw new Exception("Unable to complete backup after 20 tries");
+                        counter++;
+                        if (counter > 19)
+                        {
+                            throw new Exception("Unable to complete backup after 20 tries");
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                ExceptionPrinter.PrintException(ex, "Error while trying to initialize pre-start backup.");
-                CleanUp();
+                catch (Exception ex)
+                {
+                    ExceptionPrinter.PrintException(ex, "Error while trying to initialize pre-start backup.");
+                    CleanUp();
+                }
             }
 
             //Keep at bottom
@@ -296,23 +304,113 @@ namespace MCServerWrapper.Classes
                 FormStartupThread = null;
             }
 
+            Thread.Sleep(10000);
+            if (settings.AutoFindBackupSource)
+            {
+                ConsoleWriter.WriteLine("Please wait until the post-start backup has finished before closing to prevent backup corruption", consoleColor);
+                Task.Run(() => AutoFindBackupSource());
+
+                Thread.Sleep(60000);
+                try
+                {
+                    ConsoleWriter.WriteLine("Starting post-start backup", consoleColor);
+                    process.StandardInput.WriteLine("save-off");
+                    process.StandardInput.WriteLine("say Starting Backup. Server may lag for a bit.");
+                    int counter = 0;
+                    while (!Backup())
+                    {
+                        counter++;
+                        if (counter > 19)
+                        {
+                            throw new Exception("Unable to complete backup after 20 tries");
+                        }
+                    }
+                    process.StandardInput.WriteLine($"say Backup Successful. Next backup in {settings.BackupInterval - 1} minutes");
+                }
+                catch (Exception ex)
+                {
+                    process.StandardInput.WriteLine($"say Backup Failed. {ex.Message}.");
+                    ExceptionPrinter.PrintException(ex, "Error while trying to initialize backup.");
+                    CleanUp();
+                }
+                try { process.StandardInput.WriteLine("save-on"); } catch (Exception ex) { ExceptionPrinter.PrintException(ex, "Failed to send \"save-on\" message"); }
+            }
+
             process.WaitForExit();
             MainProcess.Join();
         }
 
-        //worker method for FormUpdateThread
-        private void FormUpdate(ProcessInfoForm form)
+        private void AutoFindBackupSource()
         {
-            PerformanceCounter memPC = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName, true);
-            PerformanceCounter cpuPC = new PerformanceCounter("Process", "% Processor Time", process.ProcessName, true);
-
-            while (!process.HasExited)
+            if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "world")))
             {
-                form.UpdateMemoryChart(memPC.NextValue());
-                form.UpdateCpuChart(cpuPC.NextValue());
+                try
+                {
+                    Settings newSettings = new Settings()
+                    {
+                        AutoFindBackupSource = false,
+                        BackupInterval = settings.BackupInterval,
+                        BackupLocation = settings.BackupLocation,
+                        BackupNumber = settings.BackupNumber,
+                        BackupSource = Path.Combine(Environment.CurrentDirectory, "world"),
+                        LaunchFlags = settings.LaunchFlags,
+                        MaxRam = settings.MaxRam,
+                        MinRam = settings.MinRam,
+                        SameMaxMin = settings.SameMaxMin,
+                        ServerPath = settings.ServerPath,
+                        ShowCpuRamUsage = settings.ShowCpuRamUsage,
+                        WrapperColor = settings.WrapperColor,
+                        ZipCompressionLevel = settings.ZipCompressionLevel,
+                    };
 
-                Thread.Sleep(1000);
+                    int counter = 0;
+                    while (!SaveSettings(newSettings) && counter < 9)
+                    {
+                        counter++;
+                        if (counter >= 9)
+                        {
+                            throw new Exception("Failed to update Settings.json after 10 tries");
+                        }
+                    }
+
+                    string json = File.ReadAllText(@"Wrapper\Settings.json");
+                    settings = JsonConvert.DeserializeObject<Settings>(json);
+                }
+                catch (Exception ex)
+                {
+                    ExceptionPrinter.PrintException(ex);
+                }
             }
+        }
+
+        private bool SaveSettings(Settings settings)
+        {
+            try
+            {
+                if (File.Exists(@"Wrapper\Settings.json"))
+                {
+                    File.Delete(@"Wrapper\Settings.json");
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionPrinter.PrintException(ex, "Error deleting old Settings.json while generating new Settings.json");
+                return false;
+            }
+
+            try
+            {
+                string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
+                File.WriteAllText(@"Wrapper\Settings.json", json);
+            }
+            catch (Exception ex)
+            {
+                ExceptionPrinter.PrintException(ex, "Error creating Settings.json while generating new Settings.json");
+                return false;
+            }
+
+            ConsoleWriter.WriteLine("Successfully found the backup source automatically", consoleColor);
+            return true;
         }
 
         private bool Backup()
@@ -360,7 +458,6 @@ namespace MCServerWrapper.Classes
                 ExceptionPrinter.PrintException(ex, "Error writing backups to BackupList.json");
             }
 
-            //cleanUp.Wait();
             return true;
         }
 
@@ -377,7 +474,7 @@ namespace MCServerWrapper.Classes
                     while (!backups.TryDequeue(out backup))
                     {
                         counter++;
-                        if (counter > 20)
+                        if (counter > 19)
                         {
                             throw new Exception("Failed to dequeue the oldest backup for deletion after 20 tries.");
                         }
@@ -475,7 +572,7 @@ namespace MCServerWrapper.Classes
         {
             try
             {
-                if (!process.HasExited)
+                if (process != null && !process.HasExited)
                 {
                     process.StandardInput.WriteLine("stop");
                     process.WaitForExit();
