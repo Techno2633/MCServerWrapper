@@ -510,7 +510,7 @@ namespace MCServerWrapper.Classes
                 //processInfoForm.UpdateIOReadWrite(IOReadList.ToArray(), IOWriteList.ToArray());
                 //processInfoForm.UpdateIODataOther(IODataList.ToArray(), IOOtherList.ToArray());
             };
-            awd aw//move this thread to the main thread
+            //awd aw//move this thread to the main thread
             //Thread that runs the connection between the wrapper and the server
             Thread MainProcess = new Thread(() =>
             {
@@ -539,18 +539,18 @@ namespace MCServerWrapper.Classes
                 ConsoleWriter.WriteLine("Process ended... shutting down host", consoleColor);
 
                 //closes and disposes of the form
-                if (!processInfoForm.IsDisposed)
-                {
-                    try
-                    {
-                        processInfoForm.Close();
-                    }
-                    catch { }
-                    finally
-                    {
-                        processInfoForm.Dispose();
-                    }
-                }
+                //if (!processInfoForm.IsDisposed)
+                //{
+                //    try
+                //    {
+                //        processInfoForm.Close();
+                //    }
+                //    catch { }
+                //    finally
+                //    {
+                //        processInfoForm.Dispose();
+                //    }
+                //}
 
                 //Stops passthrough
                 Thread.Sleep(1000);
