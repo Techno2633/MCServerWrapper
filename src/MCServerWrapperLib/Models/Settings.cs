@@ -22,6 +22,7 @@ namespace MCServerWrapperLib.Models
         public int ZipCompressionLevel;
         public bool ShowCpuRamUsage;
         public string LaunchFlags;
+        public bool AutoFindBackupSource;
 
         public Settings()
         {
@@ -37,6 +38,7 @@ namespace MCServerWrapperLib.Models
             ZipCompressionLevel = 6;
             ShowCpuRamUsage = true;
             LaunchFlags = "";
+            AutoFindBackupSource = true;
         }
     }
 }

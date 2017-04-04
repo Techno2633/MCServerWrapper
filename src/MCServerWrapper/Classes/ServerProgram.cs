@@ -13,6 +13,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Collections.Generic;
+using Timer = System.Timers.Timer;
 
 namespace MCServerWrapper.Classes
 {
@@ -21,11 +23,82 @@ namespace MCServerWrapper.Classes
         private static ConcurrentQueue<string> backups;
         private static Settings settings;
         private static Process process;
-        private static ConsoleColor consoleColor;
+        private static ConsoleColor consoleColor = ConsoleColor.Yellow;
+
+        private static List<Command> wrapperCommands;
 
         private static ConsoleEventDelegate handler;
 
-        private static ProcessInfoForm processInfoForm;
+        private ProcessInfoForm processInfoForm;
+
+        private Timer BackupTimer;
+        private Timer FormUpdateTimer;
+
+        private const int LIST_MAX = 181;
+
+        private PerformanceCounter PrivilegedTime;
+        private PerformanceCounter ProcessorTime;
+        private PerformanceCounter UserTime;
+        private PerformanceCounter CreatingProcessID;
+        private PerformanceCounter ElapsedTime;
+        private PerformanceCounter HandleCount;
+        private PerformanceCounter IDProcess;
+        private PerformanceCounter IODataBytes;
+        private PerformanceCounter IOOtherBytes;
+        private PerformanceCounter IOReadBytes;
+        private PerformanceCounter IOWriteBytes;
+        private PerformanceCounter PageFaults;
+        private PerformanceCounter PageFileBytes;
+        private PerformanceCounter PageFileBytesPeak;
+        private PerformanceCounter PoolNonpagedBytes;
+        private PerformanceCounter PoolPagedBytes;
+        private PerformanceCounter PriorityBase;
+        private PerformanceCounter PrivateBytes;
+        private PerformanceCounter ThreadCount;
+        private PerformanceCounter VirtualBytes;
+        private PerformanceCounter VirtualBytesPeak;
+        private PerformanceCounter WorkingSet;
+        private PerformanceCounter WorkingSetPrivate;
+        private PerformanceCounter WorkingSetPeak;
+
+        private List<float> ProcessorTimeList;
+        private List<float> PrivilegedTimeList;
+        private List<float> UserTimeList;
+        private List<float> WorkingSetPrivateList;
+        private List<float> WorkingSetPeakList;
+        private List<float> WorkingSetList;
+        private List<float> IOReadList;
+        private List<float> IOWriteList;
+        private List<float> IODataList;
+        private List<float> IOOtherList;
+        private List<float> PageFileList;
+        private List<float> PageFilePeakList;
+        private List<float> VirtualList;
+        private List<float> VirtualPeakList;
+        private List<float> PoolPagedList;
+        private List<float> PoolNonpagedList;
+
+        //private List<float> OverviewProcessorTimeList;
+        //private List<float> OverviewPrivilegedTimeList;
+        //private List<float> OverviewUserTimeList;
+        //private List<float> OverviewWorkingSetPrivateList;
+        //private List<float> OverviewWorkingSetPeakList;
+        //private List<float> OverviewWorkingSetList;
+        //private List<float> OverviewIOReadList;
+        //private List<float> OverviewIOWriteList;
+        //private List<float> MemoryWorkingSetPrivateList;
+        //private List<float> MemoryWorkingSetPeakList;
+        //private List<float> MemoryWorkingSetList;
+        //private List<float> MemoryPageFileList;
+        //private List<float> MemoryPageFilePeakList;
+        //private List<float> MemoryVirtualList;
+        //private List<float> MemoryVirtualPeakList;
+        //private List<float> MemoryPoolPagedList;
+        //private List<float> MemoryPoolNonpagedList;
+        //private List<float> IOReadList;
+        //private List<float> IOWriteList;
+        //private List<float> IODataList;
+        //private List<float> IOOtherList;
 
         public ServerProgram()
         {
@@ -109,12 +182,12 @@ namespace MCServerWrapper.Classes
                 if (!File.Exists(@"Wrapper\Settings.json"))
                 {
                     int counter = 0;
-                    while (!CheckWrapperSettings() && counter > 5)
+                    while (!CheckWrapperSettings() && counter < 4)
                     {
                         counter++;
                     }
 
-                    if (counter > 5)
+                    if (counter >= 4)
                     {
                         throw new Exception("Unable to create Settings.json after 5 tries");
                     }
@@ -134,12 +207,70 @@ namespace MCServerWrapper.Classes
             consoleColor = settings.WrapperColor;
 
             //Checks if the server application and server wrapper are in the same directory
-            if (Environment.CurrentDirectory != Path.GetDirectoryName(settings.ServerPath))
+            try
             {
-                ExceptionPrinter.PrintException(new Exception("Server application is not in the same directory as the wrapper.\nPlease put the server wrapper in the same directory as the server file."));
+                if (Environment.CurrentDirectory != Path.GetDirectoryName(settings.ServerPath))
+                {
+                    ExceptionPrinter.PrintException(new Exception("Server application is not in the same directory as the wrapper.\nPlease put the server wrapper in the same directory as the server file."));
+                    Close(10);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionPrinter.PrintException(ex, "Error checking server path and wrapper path");
                 Close(10);
                 return;
             }
+
+            //initialize and fill lists
+            float[] filler = new float[LIST_MAX];
+
+            for (int i = 0; i < filler.Length; i++)
+                filler[i] = 0;
+
+            ProcessorTimeList = new List<float>(filler);
+            PrivilegedTimeList = new List<float>(filler);
+            UserTimeList = new List<float>(filler);
+            WorkingSetPrivateList = new List<float>(filler);
+            WorkingSetPeakList = new List<float>(filler);
+            WorkingSetList = new List<float>(filler);
+            IOReadList = new List<float>(filler);
+            IOWriteList = new List<float>(filler);
+            IODataList = new List<float>(filler);
+            IOOtherList = new List<float>(filler);
+            PageFileList = new List<float>(filler);
+            PageFilePeakList = new List<float>(filler);
+            VirtualList = new List<float>(filler);
+            VirtualPeakList = new List<float>(filler);
+            PoolPagedList = new List<float>(filler);
+            PoolNonpagedList = new List<float>(filler);
+
+            //OverviewProcessorTimeList = new List<float>(filler);
+            //OverviewPrivilegedTimeList = new List<float>(filler);
+            //OverviewUserTimeList = new List<float>(filler);
+            //OverviewWorkingSetPrivateList = new List<float>(filler);
+            //OverviewWorkingSetPeakList = new List<float>(filler);
+            //OverviewWorkingSetList = new List<float>(filler);
+            //OverviewIOReadList = new List<float>(filler);
+            //OverviewIOWriteList = new List<float>(filler);
+            //MemoryWorkingSetPrivateList = new List<float>(filler);
+            //MemoryWorkingSetPeakList = new List<float>(filler);
+            //MemoryWorkingSetList = new List<float>(filler);
+            //MemoryPageFileList = new List<float>(filler);
+            //MemoryPageFilePeakList = new List<float>(filler);
+            //MemoryVirtualList = new List<float>(filler);
+            //MemoryVirtualPeakList = new List<float>(filler);
+            //MemoryPoolPagedList = new List<float>(filler);
+            //MemoryPoolNonpagedList = new List<float>(filler);
+            //IOReadList = new List<float>(filler);
+            //IOWriteList = new List<float>(filler);
+            //IODataList = new List<float>(filler);
+            //IOOtherList = new List<float>(filler);
+
+            //Timer Instatiation
+            BackupTimer = new Timer(settings.BackupInterval * 60000);
+            FormUpdateTimer = new Timer(1000);
         }
 
         [MTAThread]
@@ -148,8 +279,8 @@ namespace MCServerWrapper.Classes
             //Writes starting info to the console
             ConsoleWriter.WriteLine($"Starting", consoleColor);
             ConsoleWriter.WriteLine($"Program Source {settings.ServerPath}", consoleColor);
-            ConsoleWriter.WriteLine($"Min RAM: {settings.MinRam}", consoleColor);
-            ConsoleWriter.WriteLine($"Max RAM: {settings.MaxRam}", consoleColor);
+            ConsoleWriter.WriteLine($"Min RAM: {settings.MinRam}MB", consoleColor);
+            ConsoleWriter.WriteLine($"Max RAM: {settings.MaxRam}MB", consoleColor);
             ConsoleWriter.WriteLine($"Backup Interval: {settings.BackupInterval} minutes", consoleColor);
             ConsoleWriter.WriteLine($"Number of Backups: {settings.BackupNumber}", consoleColor);
             ConsoleWriter.WriteLine($"Backup Compression Level: {settings.ZipCompressionLevel}", consoleColor);
@@ -169,32 +300,270 @@ namespace MCServerWrapper.Classes
                 RedirectStandardOutput = true,
             };
 
+            //Set Backup Timer
+            BackupTimer.Elapsed += (s, e) =>
+            {
+                if (process.HasExited || process == null)
+                    return;
+
+                try
+                {
+                    process.StandardInput.WriteLine("save-off");
+                    process.StandardInput.WriteLine("say Starting Backup. Server may lag for a bit.");
+                    int counter = 0;
+                    while (!Backup())
+                    {
+                        counter++;
+                        if (counter > 19)
+                        {
+                            throw new Exception("Unable to complete backup after 20 tries");
+                        }
+                    }
+                    process.StandardInput.WriteLine($"say Backup Successful. Next backup in {settings.BackupInterval} minutes");
+                }
+                catch (Exception ex)
+                {
+                    process.StandardInput.WriteLine($"say Backup Failed. {ex.Message}.");
+                    ExceptionPrinter.PrintException(ex, "Error while trying to initialize backup.");
+                    CleanUp();
+                }
+                try { process.StandardInput.WriteLine("save-on"); } catch (Exception ex) { ExceptionPrinter.PrintException(ex, "Failed to send \"save-on\" message"); }
+            };
+
+            //Set FormUpdateTimer
+            FormUpdateTimer.Elapsed += (s, e) =>
+            {
+                if (process.HasExited)
+                    return;
+
+                float privilegedTime = PrivilegedTime.NextValue();
+                float processorTime = ProcessorTime.NextValue();
+                float userTime = UserTime.NextValue();
+                float creatingProcessID = CreatingProcessID.NextValue();
+                float elapsedTime = ElapsedTime.NextValue();
+                float handleCount = HandleCount.NextValue();
+                float idProcess = IDProcess.NextValue();
+                float ioDataBytes = IODataBytes.NextValue();
+                float ioOtherBytes = IOOtherBytes.NextValue();
+                float ioReadBytes = IOReadBytes.NextValue();
+                float ioWriteBytes = IOWriteBytes.NextValue();
+                float pageFaults = PageFaults.NextValue();
+                float pageFileBytes = PageFileBytes.NextValue();
+                float pageFileBytesPeak = PageFileBytesPeak.NextValue();
+                float poolNonpagedBytes = PoolNonpagedBytes.NextValue();
+                float poolPagedBytes = PoolPagedBytes.NextValue();
+                float priorityBase = PriorityBase.NextValue();
+                float privateBytes = PrivateBytes.NextValue();
+                float threadCount = ThreadCount.NextValue();
+                float virtualBytes = VirtualBytes.NextValue();
+                float virtualBytesPeak = VirtualBytesPeak.NextValue();
+                float workingSet = WorkingSet.NextValue();
+                float workingSetPrivate = WorkingSetPrivate.NextValue();
+                float workingSetPeak = WorkingSetPeak.NextValue();
+
+                ProcessorTimeList.Insert(0, processorTime / Environment.ProcessorCount / 100f);
+                PrivilegedTimeList.Insert(0, privilegedTime / Environment.ProcessorCount / 100f);
+                UserTimeList.Insert(0, userTime / Environment.ProcessorCount / 100f);
+                WorkingSetPrivateList.Insert(0, workingSetPrivate / 1048576);
+                WorkingSetPeakList.Insert(0, workingSetPeak / 1048576);
+                WorkingSetList.Insert(0, workingSet / 1048576);
+                IOReadList.Insert(0, ioReadBytes / 1024);
+                IOWriteList.Insert(0, ioWriteBytes / 1024);
+                IODataList.Insert(0, ioDataBytes / 1024);
+                IOOtherList.Insert(0, ioOtherBytes / 1024);
+                WorkingSetPrivateList.Insert(0, workingSetPrivate / 1048576);
+                WorkingSetPeakList.Insert(0, workingSetPeak / 1048576);
+                WorkingSetList.Insert(0, workingSet / 1048576);
+                PageFileList.Insert(0, pageFileBytes / 1048576);
+                PageFilePeakList.Insert(0, pageFileBytesPeak / 1048576);
+                VirtualList.Insert(0, virtualBytes / 1048576);
+                VirtualPeakList.Insert(0, virtualBytesPeak / 1048576);
+                PoolPagedList.Insert(0, poolPagedBytes / 1024);
+                PoolNonpagedList.Insert(0, poolNonpagedBytes / 1024);
+
+                //OverviewProcessorTimeList.Insert(0, processorTime / Environment.ProcessorCount / 100f);
+                //OverviewPrivilegedTimeList.Insert(0, privilegedTime / Environment.ProcessorCount / 100f);
+                //OverviewUserTimeList.Insert(0, userTime / Environment.ProcessorCount / 100f);
+                //OverviewWorkingSetPrivateList.Insert(0, workingSetPrivate / 1048576);
+                //OverviewWorkingSetPeakList.Insert(0, workingSetPeak / 1048576);
+                //OverviewWorkingSetList.Insert(0, workingSet / 1048576);
+                //OverviewIOReadList.Insert(0, ioReadBytes / 1024);
+                //OverviewIOWriteList.Insert(0, ioWriteBytes / 1024);
+                //MemoryWorkingSetPrivateList.Insert(0, workingSetPrivate / 1048576);
+                //MemoryWorkingSetPeakList.Insert(0, workingSetPeak / 1048576);
+                //MemoryWorkingSetList.Insert(0, workingSet / 1048576);
+                //MemoryPageFileList.Insert(0, pageFileBytes / 1048576);
+                //MemoryPageFilePeakList.Insert(0, pageFileBytesPeak / 1048576);
+                //MemoryVirtualList.Insert(0, virtualBytes / 1048576);
+                //MemoryVirtualPeakList.Insert(0, virtualBytesPeak / 1048576);
+                //MemoryPoolPagedList.Insert(0, poolPagedBytes / 1024);
+                //MemoryPoolNonpagedList.Insert(0, poolNonpagedBytes / 1024);
+                //IOReadList.Insert(0, ioReadBytes / 1024);
+                //IOWriteList.Insert(0, ioWriteBytes / 1024);
+                //IODataList.Insert(0, ioDataBytes / 1024);
+                //IOOtherList.Insert(0, ioOtherBytes / 1024);
+
+                while (ProcessorTimeList.Count > LIST_MAX)
+                    ProcessorTimeList.RemoveAt(LIST_MAX);
+                while (PrivilegedTimeList.Count > LIST_MAX)
+                    PrivilegedTimeList.RemoveAt(LIST_MAX);
+                while (UserTimeList.Count > LIST_MAX)
+                    UserTimeList.RemoveAt(LIST_MAX);
+                while (WorkingSetPrivateList.Count > LIST_MAX)
+                    WorkingSetPrivateList.RemoveAt(LIST_MAX);
+                while (WorkingSetPeakList.Count > LIST_MAX)
+                    WorkingSetPeakList.RemoveAt(LIST_MAX);
+                while (WorkingSetList.Count > LIST_MAX)
+                    WorkingSetList.RemoveAt(LIST_MAX);
+                while (IOReadList.Count > LIST_MAX)
+                    IOReadList.RemoveAt(LIST_MAX);
+                while (IOWriteList.Count > LIST_MAX)
+                    IOWriteList.RemoveAt(LIST_MAX);
+                while (IODataList.Count > LIST_MAX)
+                    IODataList.RemoveAt(LIST_MAX);
+                while (IOOtherList.Count > LIST_MAX)
+                    IOOtherList.RemoveAt(LIST_MAX);
+                while (WorkingSetPrivateList.Count > LIST_MAX)
+                    WorkingSetPrivateList.RemoveAt(LIST_MAX);
+                while (WorkingSetPeakList.Count > LIST_MAX)
+                    WorkingSetPeakList.RemoveAt(LIST_MAX);
+                while (WorkingSetList.Count > LIST_MAX)
+                    WorkingSetList.RemoveAt(LIST_MAX);
+                while (PageFileList.Count > LIST_MAX)
+                    PageFileList.RemoveAt(LIST_MAX);
+                while (PageFilePeakList.Count > LIST_MAX)
+                    PageFilePeakList.RemoveAt(LIST_MAX);
+                while (VirtualList.Count > LIST_MAX)
+                    VirtualList.RemoveAt(LIST_MAX);
+                while (VirtualPeakList.Count > LIST_MAX)
+                    VirtualPeakList.RemoveAt(LIST_MAX);
+                while (PoolPagedList.Count > LIST_MAX)
+                    PoolPagedList.RemoveAt(LIST_MAX);
+                while (PoolNonpagedList.Count > LIST_MAX)
+                    PoolNonpagedList.RemoveAt(LIST_MAX);
+
+                //while (OverviewProcessorTimeList.Count > LIST_MAX)
+                //    OverviewProcessorTimeList.RemoveAt(LIST_MAX);
+                //while (OverviewPrivilegedTimeList.Count > LIST_MAX)
+                //    OverviewPrivilegedTimeList.RemoveAt(LIST_MAX);
+                //while (OverviewUserTimeList.Count > LIST_MAX)
+                //    OverviewUserTimeList.RemoveAt(LIST_MAX);
+                //while (OverviewWorkingSetPrivateList.Count > LIST_MAX)
+                //    OverviewWorkingSetPrivateList.RemoveAt(LIST_MAX);
+                //while (OverviewWorkingSetPeakList.Count > LIST_MAX)
+                //    OverviewWorkingSetPeakList.RemoveAt(LIST_MAX);
+                //while (OverviewWorkingSetList.Count > LIST_MAX)
+                //    OverviewWorkingSetList.RemoveAt(LIST_MAX);
+                //while (OverviewIOReadList.Count > LIST_MAX)
+                //    OverviewIOReadList.RemoveAt(LIST_MAX);
+                //while (OverviewIOWriteList.Count > LIST_MAX)
+                //    OverviewIOWriteList.RemoveAt(LIST_MAX);
+                //while (MemoryWorkingSetPrivateList.Count > LIST_MAX)
+                //    MemoryWorkingSetPrivateList.RemoveAt(LIST_MAX);
+                //while (MemoryWorkingSetPeakList.Count > LIST_MAX)
+                //    MemoryWorkingSetPeakList.RemoveAt(LIST_MAX);
+                //while (MemoryWorkingSetList.Count > LIST_MAX)
+                //    MemoryWorkingSetList.RemoveAt(LIST_MAX);
+                //while (MemoryPageFileList.Count > LIST_MAX)
+                //    MemoryPageFileList.RemoveAt(LIST_MAX);
+                //while (MemoryPageFilePeakList.Count > LIST_MAX)
+                //    MemoryPageFilePeakList.RemoveAt(LIST_MAX);
+                //while (MemoryVirtualList.Count > LIST_MAX)
+                //    MemoryVirtualList.RemoveAt(LIST_MAX);
+                //while (MemoryVirtualPeakList.Count > LIST_MAX)
+                //    MemoryVirtualPeakList.RemoveAt(LIST_MAX);
+                //while (MemoryPoolPagedList.Count > LIST_MAX)
+                //    MemoryPoolPagedList.RemoveAt(LIST_MAX);
+                //while (MemoryPoolNonpagedList.Count > LIST_MAX)
+                //    MemoryPoolNonpagedList.RemoveAt(LIST_MAX);
+                //while (IOReadList.Count > LIST_MAX)
+                //    IOReadList.RemoveAt(LIST_MAX);
+                //while (IOWriteList.Count > LIST_MAX)
+                //    IOWriteList.RemoveAt(LIST_MAX);
+                //while (IODataList.Count > LIST_MAX)
+                //    IODataList.RemoveAt(LIST_MAX);
+                //while (IOOtherList.Count > LIST_MAX)
+                //    IOOtherList.RemoveAt(LIST_MAX);
+
+                if (processInfoForm.IsDisposed)
+                    return;
+
+                processInfoForm.UpdateOverviewCPU(ProcessorTimeList.ToArray(), PrivilegedTimeList.ToArray(), UserTimeList.ToArray());
+                processInfoForm.UpdateOverviewMemory(WorkingSetPrivateList.ToArray(), WorkingSetPeakList.ToArray(), WorkingSetList.ToArray());
+                processInfoForm.UpdateOverviewIO(IOReadList.ToArray(), IOWriteList.ToArray());
+                processInfoForm.UpdateOverviewInfo(creatingProcessID, elapsedTime, handleCount, idProcess, pageFaults, priorityBase, privateBytes, threadCount);
+                processInfoForm.UpdateMemoryWorkingSet(WorkingSetPrivateList.ToArray(), WorkingSetPeakList.ToArray(), WorkingSetList.ToArray());
+                processInfoForm.UpdateMemoryPageFileList(PageFileList.ToArray(), PageFilePeakList.ToArray());
+                processInfoForm.UpdateMemoryVirtual(VirtualList.ToArray(), VirtualPeakList.ToArray());
+                processInfoForm.UpdateMemoryPool(PoolPagedList.ToArray(), PoolNonpagedList.ToArray());
+                processInfoForm.UpdateIOReadWrite(IOReadList.ToArray(), IOWriteList.ToArray());
+                processInfoForm.UpdateIODataOther(IODataList.ToArray(), IOOtherList.ToArray());
+
+                //processInfoForm.UpdateOverviewCPU(OverviewProcessorTimeList.ToArray(), OverviewPrivilegedTimeList.ToArray(), OverviewUserTimeList.ToArray());
+                //processInfoForm.UpdateOverviewMemory(OverviewWorkingSetPrivateList.ToArray(), OverviewWorkingSetPeakList.ToArray(), OverviewWorkingSetList.ToArray());
+                //processInfoForm.UpdateOverviewIO(OverviewIOReadList.ToArray(), OverviewIOWriteList.ToArray());
+                //processInfoForm.UpdateOverviewInfo(creatingProcessID, elapsedTime, handleCount, idProcess, pageFaults, priorityBase, privateBytes, threadCount);
+                //processInfoForm.UpdateMemoryWorkingSet(MemoryWorkingSetPrivateList.ToArray(), MemoryWorkingSetPeakList.ToArray(), MemoryWorkingSetList.ToArray());
+                //processInfoForm.UpdateMemoryPageFileList(MemoryPageFileList.ToArray(), MemoryPageFilePeakList.ToArray());
+                //processInfoForm.UpdateMemoryVirtual(MemoryVirtualList.ToArray(), MemoryVirtualPeakList.ToArray());
+                //processInfoForm.UpdateMemoryPool(MemoryPoolPagedList.ToArray(), MemoryPoolNonpagedList.ToArray());
+                //processInfoForm.UpdateIOReadWrite(IOReadList.ToArray(), IOWriteList.ToArray());
+                //processInfoForm.UpdateIODataOther(IODataList.ToArray(), IOOtherList.ToArray());
+            };
+            awd aw//move this thread to the main thread
             //Thread that runs the connection between the wrapper and the server
             Thread MainProcess = new Thread(() =>
             {
-                // Depending on your application you may either prioritize the IO or the exact opposite
+                //Depending on your application you may either prioritize the IO or the exact opposite
                 const ThreadPriority ioPriority = ThreadPriority.AboveNormal;
-                var outputThread = new Thread(outputReader) { Name = "ChildIO Output", Priority = ioPriority, IsBackground = true };
-                var errorThread = new Thread(errorReader) { Name = "ChildIO Error", Priority = ioPriority, IsBackground = true };
-                var inputThread = new Thread(inputReader) { Name = "ChildIO Input", Priority = ioPriority, IsBackground = true };
+                Thread outputThread = new Thread(outputReader) { Name = "ChildIO Output", Priority = ioPriority, IsBackground = true };
+                Thread errorThread = new Thread(errorReader) { Name = "ChildIO Error", Priority = ioPriority, IsBackground = true };
+                Thread inputThread = new Thread(inputReader) { Name = "ChildIO Input", Priority = ioPriority, IsBackground = true };
 
-                // Start the IO threads
+                //Start the IO threads
                 outputThread.Start(process);
                 errorThread.Start(process);
                 inputThread.Start(process);
 
-                // Signal to end the application
+                //Signal to end the application
                 ManualResetEvent stopApp = new ManualResetEvent(false);
 
-                // Enables the exited event and set the stopApp signal on exited
+                //Enables the exited event and set the stopApp signal on exited
                 process.EnableRaisingEvents = true;
                 process.Exited += (e, sender) => { stopApp.Set(); };
 
-                // Wait for the child app to stop
+                //Wait for the child app to stop
                 stopApp.WaitOne();
 
-                // Write output
+                //Write output
                 ConsoleWriter.WriteLine("Process ended... shutting down host", consoleColor);
+
+                //closes and disposes of the form
+                if (!processInfoForm.IsDisposed)
+                {
+                    try
+                    {
+                        processInfoForm.Close();
+                    }
+                    catch { }
+                    finally
+                    {
+                        processInfoForm.Dispose();
+                    }
+                }
+
+                //Stops passthrough
+                Thread.Sleep(1000);
+                if (outputThread.IsAlive)
+                    outputThread.Abort();
+
+                if (errorThread.IsAlive)
+                    errorThread.Abort();
+
+                if (inputThread.IsAlive)
+                    inputThread.Abort();
+
+                //close wrapper
                 Close(8);
             })
             {
@@ -204,99 +573,174 @@ namespace MCServerWrapper.Classes
             };
 
             //Thread that handles the backing up of the server
-            Thread BackupThread = new Thread(() =>
-            {
-                while (MainProcess.ThreadState != System.Threading.ThreadState.Stopped)
-                {
-                    Thread.Sleep(settings.BackupInterval * 60000);
-                    try
-                    {
-                        process.StandardInput.WriteLine("save-off");
-                        process.StandardInput.WriteLine("say Starting Backup. Server may lag for a bit.");
-                        int counter = 0;
-                        while (!Backup())
-                        {
-                            counter++;
-                            if (counter > 20)
-                            {
-                                throw new Exception("Unable to complete backup after 20 tries");
-                            }
-                        }
-                        process.StandardInput.WriteLine($"say Backup Successful. Next backup in {settings.BackupInterval} minutes");
-                    }
-                    catch (Exception ex)
-                    {
-                        process.StandardInput.WriteLine($"say Backup Failed. {ex.Message}.");
-                        ExceptionPrinter.PrintException(ex, "Error while trying to initialize backup.");
-                        CleanUp();
-                    }
-                    try { process.StandardInput.WriteLine("save-on"); } catch (Exception ex) { ExceptionPrinter.PrintException(ex, "Failed to send \"save-on\" message"); }
-                }
-            })
-            {
-                IsBackground = true,
-                Name = "BackupThread",
-                Priority = ThreadPriority.AboveNormal,
-            };
+            //Thread BackupThread = new Thread(() =>
+            //{
+            //    while (!process.HasExited)
+            //    {
+            //        Thread.Sleep(settings.BackupInterval * 60000);
+            //        try
+            //        {
+            //            process.StandardInput.WriteLine("save-off");
+            //            process.StandardInput.WriteLine("say Starting Backup. Server may lag for a bit.");
+            //            int counter = 0;
+            //            while (!Backup())
+            //            {
+            //                counter++;
+            //                if (counter > 19)
+            //                {
+            //                    throw new Exception("Unable to complete backup after 20 tries");
+            //                }
+            //            }
+            //            process.StandardInput.WriteLine($"say Backup Successful. Next backup in {settings.BackupInterval} minutes");
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            process.StandardInput.WriteLine($"say Backup Failed. {ex.Message}.");
+            //            ExceptionPrinter.PrintException(ex, "Error while trying to initialize backup.");
+            //            CleanUp();
+            //        }
+            //        try { process.StandardInput.WriteLine("save-on"); } catch (Exception ex) { ExceptionPrinter.PrintException(ex, "Failed to send \"save-on\" message"); }
+            //    }
+            //})
+            //{
+            //    IsBackground = true,
+            //    Name = "BackupThread",
+            //    Priority = ThreadPriority.AboveNormal,
+            //};
 
             //Form Thread
-            Thread FormStartupThread = new Thread(() =>
+            Action FormStartupAction = new Action(() =>
             {
-                processInfoForm = new ProcessInfoForm(settings.MaxRam);
-
-                Thread FormUpdateThread = new Thread(() => FormUpdate(processInfoForm))
-                {
-                    IsBackground = true,
-                    Name = "FormUpdateThread",
-                    Priority = ThreadPriority.Normal,
-                };
-
-                FormUpdateThread.Start();
+                processInfoForm = new ProcessInfoForm(LIST_MAX);
+                FormUpdateTimer.Start();
                 Application.Run(processInfoForm);
-                FormUpdateThread.Abort();
-            })
+                FormUpdateTimer.Stop();
+            });
+
+            //Thread FormStartupThread = new Thread(() => FormStartupAction?.Invoke())
+            //{
+            //    IsBackground = true,
+            //    Name = "FormStartupThread",
+            //    Priority = ThreadPriority.Normal,
+            //};
+            //FormStartupThread.TrySetApartmentState(ApartmentState.STA);
+
+            //load commands
+            wrapperCommands = new List<Command>();
+
+            wrapperCommands.Add(new Command("showstats", () =>
             {
-                IsBackground = true,
-                Name = "FormStartupThread",
-                Priority = ThreadPriority.Normal,
-            };
-            FormStartupThread.TrySetApartmentState(ApartmentState.STA);
+                Task.Run(FormStartupAction);
+
+                //if (process != null && FormStartupThread != null && !FormStartupThread.IsAlive)
+                //{
+                //    FormStartupThread = new Thread(() => FormStartupAction?.Invoke());
+                //    FormStartupThread.Start();
+                //}
+            }));
 
             //pre-start backup
-            try
+            if (!settings.AutoFindBackupSource)
             {
-                ConsoleWriter.WriteLine("Starting pre-start backup", consoleColor);
-                int counter = 0;
-                while (!Backup())
+                try
                 {
-                    counter++;
-                    if (counter > 20)
+                    ConsoleWriter.WriteLine("Starting pre-start backup", consoleColor);
+                    int counter = 0;
+                    while (!Backup())
                     {
-                        throw new Exception("Unable to complete backup after 20 tries");
+                        counter++;
+                        if (counter > 19)
+                        {
+                            throw new Exception("Unable to complete backup after 20 tries");
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                ExceptionPrinter.PrintException(ex, "Error while trying to initialize pre-start backup.");
-                CleanUp();
+                catch (Exception ex)
+                {
+                    ExceptionPrinter.PrintException(ex, "Error while trying to initialize pre-start backup.");
+                    CleanUp();
+                }
             }
 
-            //Keep at bottom
+            //Starts the server process
             process.Start();
+
+            //Performance Counter
+            PrivilegedTime = new PerformanceCounter("Process", "% Privileged Time", process.ProcessName, true);
+            ProcessorTime = new PerformanceCounter("Process", "% Processor Time", process.ProcessName, true);
+            UserTime = new PerformanceCounter("Process", "% User Time", process.ProcessName, true);
+            CreatingProcessID = new PerformanceCounter("Process", "Creating Process ID", process.ProcessName, true);
+            ElapsedTime = new PerformanceCounter("Process", "Elapsed Time", process.ProcessName, true);
+            HandleCount = new PerformanceCounter("Process", "Handle Count", process.ProcessName, true);
+            IDProcess = new PerformanceCounter("Process", "ID Process", process.ProcessName, true);
+            IODataBytes = new PerformanceCounter("Process", "IO Data Bytes/sec", process.ProcessName, true);
+            IOOtherBytes = new PerformanceCounter("Process", "IO Other Bytes/sec", process.ProcessName, true);
+            IOReadBytes = new PerformanceCounter("Process", "IO Read Bytes/sec", process.ProcessName, true);
+            IOWriteBytes = new PerformanceCounter("Process", "IO Write Bytes/sec", process.ProcessName, true);
+            PageFaults = new PerformanceCounter("Process", "Page Faults/sec", process.ProcessName, true);
+            PageFileBytes = new PerformanceCounter("Process", "Page File Bytes", process.ProcessName, true);
+            PageFileBytesPeak = new PerformanceCounter("Process", "Page File Bytes Peak", process.ProcessName, true);
+            PoolNonpagedBytes = new PerformanceCounter("Process", "Pool Nonpaged Bytes", process.ProcessName, true);
+            PoolPagedBytes = new PerformanceCounter("Process", "Pool Paged Bytes", process.ProcessName, true);
+            PriorityBase = new PerformanceCounter("Process", "Priority Base", process.ProcessName, true);
+            PrivateBytes = new PerformanceCounter("Process", "Private Bytes", process.ProcessName, true);
+            ThreadCount = new PerformanceCounter("Process", "Thread Count", process.ProcessName, true);
+            VirtualBytes = new PerformanceCounter("Process", "Virtual Bytes", process.ProcessName, true);
+            VirtualBytesPeak = new PerformanceCounter("Process", "Virtual Bytes Peak", process.ProcessName, true);
+            WorkingSet = new PerformanceCounter("Process", "Working Set", process.ProcessName, true);
+            WorkingSetPrivate = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName, true);
+            WorkingSetPeak = new PerformanceCounter("Process", "Working Set Peak", process.ProcessName, true);
+
             MainProcess.Start();
-            BackupThread.Start();
+            //BackupThread.Start();
+            BackupTimer.Start();
 
             if (settings.ShowCpuRamUsage)
+                Task.Run(FormStartupAction);
+
+            //if (settings.ShowCpuRamUsage)
+            //{
+            //    FormStartupThread.Start();
+            //}
+            //else
+            //{
+            //    FormStartupThread = null;
+            //}
+
+            //Thread.Sleep(10000);
+            if (settings.AutoFindBackupSource)
             {
-                FormStartupThread.Start();
-            }
-            else
-            {
-                FormStartupThread = null;
+                ConsoleWriter.WriteLine("Please wait until the post-start backup has finished before closing to prevent backup corruption", consoleColor);
+                Task.Run(() => AutoFindBackupSource());
+
+                Thread.Sleep(60000);
+                try
+                {
+                    ConsoleWriter.WriteLine("Starting post-start backup", consoleColor);
+                    process.StandardInput.WriteLine("save-off");
+                    process.StandardInput.WriteLine("say Starting Backup. Server may lag for a bit.");
+                    int counter = 0;
+                    while (!Backup())
+                    {
+                        counter++;
+                        if (counter > 19)
+                        {
+                            throw new Exception("Unable to complete backup after 20 tries");
+                        }
+                    }
+                    process.StandardInput.WriteLine($"say Backup Successful. Next backup in {settings.BackupInterval - 1} minutes");
+                }
+                catch (Exception ex)
+                {
+                    process.StandardInput.WriteLine($"say Backup Failed. {ex.Message}.");
+                    ExceptionPrinter.PrintException(ex, "Error while trying to initialize backup.");
+                    CleanUp();
+                }
+                try { process.StandardInput.WriteLine("save-on"); } catch (Exception ex) { ExceptionPrinter.PrintException(ex, "Failed to send \"save-on\" message"); }
             }
 
             process.WaitForExit();
+
             MainProcess.Join();
         }
 
@@ -308,11 +752,84 @@ namespace MCServerWrapper.Classes
 
             while (!process.HasExited)
             {
-                form.UpdateMemoryChart(memPC.NextValue());
-                form.UpdateCpuChart(cpuPC.NextValue());
+                //form.UpdateMemoryChart(memPC.NextValue());
+                //form.UpdateCpuChart(cpuPC.NextValue());
 
                 Thread.Sleep(1000);
             }
+        }
+
+        private void AutoFindBackupSource()
+        {
+            if (Directory.Exists(Path.Combine(Environment.CurrentDirectory, "world")))
+            {
+                try
+                {
+                    Settings newSettings = new Settings()
+                    {
+                        AutoFindBackupSource = false,
+                        BackupInterval = settings.BackupInterval,
+                        BackupLocation = settings.BackupLocation,
+                        BackupNumber = settings.BackupNumber,
+                        BackupSource = Path.Combine(Environment.CurrentDirectory, "world"),
+                        LaunchFlags = settings.LaunchFlags,
+                        MaxRam = settings.MaxRam,
+                        MinRam = settings.MinRam,
+                        SameMaxMin = settings.SameMaxMin,
+                        ServerPath = settings.ServerPath,
+                        ShowCpuRamUsage = settings.ShowCpuRamUsage,
+                        WrapperColor = settings.WrapperColor,
+                        ZipCompressionLevel = settings.ZipCompressionLevel,
+                    };
+
+                    int counter = 0;
+                    while (!SaveSettings(newSettings) && counter < 9)
+                    {
+                        counter++;
+                        if (counter >= 9)
+                        {
+                            throw new Exception("Failed to update Settings.json after 10 tries");
+                        }
+                    }
+
+                    string json = File.ReadAllText(@"Wrapper\Settings.json");
+                    settings = JsonConvert.DeserializeObject<Settings>(json);
+                }
+                catch (Exception ex)
+                {
+                    ExceptionPrinter.PrintException(ex);
+                }
+            }
+        }
+
+        private bool SaveSettings(Settings settings)
+        {
+            try
+            {
+                if (File.Exists(@"Wrapper\Settings.json"))
+                {
+                    File.Delete(@"Wrapper\Settings.json");
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionPrinter.PrintException(ex, "Error deleting old Settings.json while generating new Settings.json");
+                return false;
+            }
+
+            try
+            {
+                string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
+                File.WriteAllText(@"Wrapper\Settings.json", json);
+            }
+            catch (Exception ex)
+            {
+                ExceptionPrinter.PrintException(ex, "Error creating Settings.json while generating new Settings.json");
+                return false;
+            }
+
+            ConsoleWriter.WriteLine("Successfully found the backup source automatically", consoleColor);
+            return true;
         }
 
         private bool Backup()
@@ -377,7 +894,7 @@ namespace MCServerWrapper.Classes
                     while (!backups.TryDequeue(out backup))
                     {
                         counter++;
-                        if (counter > 20)
+                        if (counter > 19)
                         {
                             throw new Exception("Failed to dequeue the oldest backup for deletion after 20 tries.");
                         }
@@ -446,25 +963,59 @@ namespace MCServerWrapper.Classes
 
         private static void outputReader(object p)
         {
-            var process = (Process)p;
+            Process process = (Process)p;
             // Pass the standard output of the child to our standard output
             passThrough(process.StandardOutput.BaseStream, Console.OpenStandardOutput());
         }
 
         private static void errorReader(object p)
         {
-            var process = (Process)p;
+            Process process = (Process)p;
             // Pass the standard error of the child to our standard error
             passThrough(process.StandardError.BaseStream, Console.OpenStandardError());
         }
 
         private static void inputReader(object p)
         {
-            var process = (Process)p;
+            Process process = (Process)p;
 
-            // Pass the standard input into the standard input of the child  
-            passThrough(Console.OpenStandardInput(), process.StandardInput.BaseStream);
+            while (!process.HasExited)
+            {
+                bool continuing = false;
+                string inStr = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(inStr))
+                    continue;
+
+                foreach(Command cmd in wrapperCommands)
+                {
+                    foreach(string cmdName in cmd.GetCommands())
+                    {
+                        if (cmdName.ToLower().Equals(inStr))
+                        {
+                            cmd.Run();
+                            continuing = true;
+                            break;
+                        }
+                    }
+
+                    if (continuing)
+                        break;
+                }
+
+                if (continuing)
+                    continue;
+
+                process.StandardInput.WriteLine(inStr);
+            }
         }
+
+        //private static void inputReader(Process p)
+        //{
+        //    Process process = p;
+        //    // Pass the standard input into the standard input of the child  
+        //    passThrough(Console.OpenStandardInput(), process.StandardInput.BaseStream);
+        //}
 
         private void Close()
         {
@@ -475,7 +1026,7 @@ namespace MCServerWrapper.Classes
         {
             try
             {
-                if (!process.HasExited)
+                if (process != null && !process.HasExited)
                 {
                     process.StandardInput.WriteLine("stop");
                     process.WaitForExit();

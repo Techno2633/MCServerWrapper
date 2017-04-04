@@ -56,6 +56,7 @@
             this.ShowRamCpuUsage = new System.Windows.Forms.CheckBox();
             this.Prompt10 = new System.Windows.Forms.Label();
             this.LaunchFlags = new System.Windows.Forms.TextBox();
+            this.FindBackupSource = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.MaxRamSlider)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MinRamSlider)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BackupInterval)).BeginInit();
@@ -161,7 +162,7 @@
             // 
             this.Prompt6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.Prompt6.AutoSize = true;
-            this.Prompt6.Location = new System.Drawing.Point(12, 275);
+            this.Prompt6.Location = new System.Drawing.Point(12, 298);
             this.Prompt6.Name = "Prompt6";
             this.Prompt6.Size = new System.Drawing.Size(128, 13);
             this.Prompt6.TabIndex = 18;
@@ -170,7 +171,7 @@
             // BackupInterval
             // 
             this.BackupInterval.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.BackupInterval.Location = new System.Drawing.Point(146, 273);
+            this.BackupInterval.Location = new System.Drawing.Point(146, 296);
             this.BackupInterval.Maximum = new decimal(new int[] {
             50,
             0,
@@ -194,7 +195,7 @@
             // 
             this.BackupSource.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.BackupSource.Location = new System.Drawing.Point(99, 221);
+            this.BackupSource.Location = new System.Drawing.Point(99, 244);
             this.BackupSource.Name = "BackupSource";
             this.BackupSource.Size = new System.Drawing.Size(235, 20);
             this.BackupSource.TabIndex = 19;
@@ -203,7 +204,7 @@
             // 
             this.Prompt4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.Prompt4.AutoSize = true;
-            this.Prompt4.Location = new System.Drawing.Point(12, 224);
+            this.Prompt4.Location = new System.Drawing.Point(12, 247);
             this.Prompt4.Name = "Prompt4";
             this.Prompt4.Size = new System.Drawing.Size(81, 13);
             this.Prompt4.TabIndex = 21;
@@ -212,7 +213,7 @@
             // BrowseBackupSource
             // 
             this.BrowseBackupSource.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.BrowseBackupSource.Location = new System.Drawing.Point(340, 220);
+            this.BrowseBackupSource.Location = new System.Drawing.Point(340, 243);
             this.BrowseBackupSource.Name = "BrowseBackupSource";
             this.BrowseBackupSource.Size = new System.Drawing.Size(54, 22);
             this.BrowseBackupSource.TabIndex = 20;
@@ -223,7 +224,7 @@
             // BrowseBackupLocation
             // 
             this.BrowseBackupLocation.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.BrowseBackupLocation.Location = new System.Drawing.Point(340, 246);
+            this.BrowseBackupLocation.Location = new System.Drawing.Point(340, 269);
             this.BrowseBackupLocation.Name = "BrowseBackupLocation";
             this.BrowseBackupLocation.Size = new System.Drawing.Size(54, 22);
             this.BrowseBackupLocation.TabIndex = 22;
@@ -235,7 +236,7 @@
             // 
             this.Prompt5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.Prompt5.AutoSize = true;
-            this.Prompt5.Location = new System.Drawing.Point(12, 250);
+            this.Prompt5.Location = new System.Drawing.Point(12, 273);
             this.Prompt5.Name = "Prompt5";
             this.Prompt5.Size = new System.Drawing.Size(88, 13);
             this.Prompt5.TabIndex = 24;
@@ -245,7 +246,7 @@
             // 
             this.BackupLocation.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.BackupLocation.Location = new System.Drawing.Point(106, 247);
+            this.BackupLocation.Location = new System.Drawing.Point(106, 270);
             this.BackupLocation.Name = "BackupLocation";
             this.BackupLocation.Size = new System.Drawing.Size(228, 20);
             this.BackupLocation.TabIndex = 21;
@@ -253,7 +254,7 @@
             // BackupNumber
             // 
             this.BackupNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.BackupNumber.Location = new System.Drawing.Point(119, 299);
+            this.BackupNumber.Location = new System.Drawing.Point(119, 322);
             this.BackupNumber.Maximum = new decimal(new int[] {
             120,
             0,
@@ -277,7 +278,7 @@
             // 
             this.Prompt7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.Prompt7.AutoSize = true;
-            this.Prompt7.Location = new System.Drawing.Point(12, 301);
+            this.Prompt7.Location = new System.Drawing.Point(12, 324);
             this.Prompt7.Name = "Prompt7";
             this.Prompt7.Size = new System.Drawing.Size(101, 13);
             this.Prompt7.TabIndex = 26;
@@ -286,7 +287,7 @@
             // GenSettings
             // 
             this.GenSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.GenSettings.Location = new System.Drawing.Point(278, 377);
+            this.GenSettings.Location = new System.Drawing.Point(278, 400);
             this.GenSettings.Name = "GenSettings";
             this.GenSettings.Size = new System.Drawing.Size(116, 23);
             this.GenSettings.TabIndex = 31;
@@ -298,7 +299,7 @@
             // 
             this.Prompt11.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.Prompt11.AutoSize = true;
-            this.Prompt11.Location = new System.Drawing.Point(12, 381);
+            this.Prompt11.Location = new System.Drawing.Point(12, 404);
             this.Prompt11.Name = "Prompt11";
             this.Prompt11.Size = new System.Drawing.Size(113, 13);
             this.Prompt11.TabIndex = 29;
@@ -308,7 +309,7 @@
             // 
             this.ConsoleColorCbo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.ConsoleColorCbo.FormattingEnabled = true;
-            this.ConsoleColorCbo.Location = new System.Drawing.Point(131, 378);
+            this.ConsoleColorCbo.Location = new System.Drawing.Point(131, 401);
             this.ConsoleColorCbo.Name = "ConsoleColorCbo";
             this.ConsoleColorCbo.Size = new System.Drawing.Size(128, 21);
             this.ConsoleColorCbo.TabIndex = 30;
@@ -318,7 +319,7 @@
             this.CompressionLevelCbo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.CompressionLevelCbo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CompressionLevelCbo.FormattingEnabled = true;
-            this.CompressionLevelCbo.Location = new System.Drawing.Point(113, 325);
+            this.CompressionLevelCbo.Location = new System.Drawing.Point(114, 348);
             this.CompressionLevelCbo.Name = "CompressionLevelCbo";
             this.CompressionLevelCbo.Size = new System.Drawing.Size(121, 21);
             this.CompressionLevelCbo.TabIndex = 28;
@@ -328,7 +329,7 @@
             // 
             this.Prompt9.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.Prompt9.AutoSize = true;
-            this.Prompt9.Location = new System.Drawing.Point(11, 328);
+            this.Prompt9.Location = new System.Drawing.Point(12, 351);
             this.Prompt9.Name = "Prompt9";
             this.Prompt9.Size = new System.Drawing.Size(96, 13);
             this.Prompt9.TabIndex = 35;
@@ -348,7 +349,7 @@
             // 
             this.Prompt10.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.Prompt10.AutoSize = true;
-            this.Prompt10.Location = new System.Drawing.Point(12, 355);
+            this.Prompt10.Location = new System.Drawing.Point(12, 378);
             this.Prompt10.Name = "Prompt10";
             this.Prompt10.Size = new System.Drawing.Size(105, 13);
             this.Prompt10.TabIndex = 36;
@@ -358,16 +359,27 @@
             // 
             this.LaunchFlags.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.LaunchFlags.Location = new System.Drawing.Point(123, 352);
+            this.LaunchFlags.Location = new System.Drawing.Point(123, 375);
             this.LaunchFlags.Name = "LaunchFlags";
             this.LaunchFlags.Size = new System.Drawing.Size(271, 20);
             this.LaunchFlags.TabIndex = 29;
+            // 
+            // FindBackupSource
+            // 
+            this.FindBackupSource.AutoSize = true;
+            this.FindBackupSource.Location = new System.Drawing.Point(15, 221);
+            this.FindBackupSource.Name = "FindBackupSource";
+            this.FindBackupSource.Size = new System.Drawing.Size(381, 17);
+            this.FindBackupSource.TabIndex = 37;
+            this.FindBackupSource.Text = "Find world folder after server starts (if checked leave Backup Source blank)";
+            this.FindBackupSource.UseVisualStyleBackColor = true;
             // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(406, 411);
+            this.ClientSize = new System.Drawing.Size(406, 435);
+            this.Controls.Add(this.FindBackupSource);
             this.Controls.Add(this.LaunchFlags);
             this.Controls.Add(this.Prompt10);
             this.Controls.Add(this.ShowRamCpuUsage);
@@ -396,7 +408,7 @@
             this.Controls.Add(this.BrowseServerPath);
             this.Controls.Add(this.ServerPath);
             this.Controls.Add(this.Prompt1);
-            this.MinimumSize = new System.Drawing.Size(422, 450);
+            this.MinimumSize = new System.Drawing.Size(422, 473);
             this.Name = "Main";
             this.ShowIcon = false;
             this.Text = "MC Server Wrapper Setting Generator";
@@ -439,5 +451,6 @@
         private System.Windows.Forms.CheckBox ShowRamCpuUsage;
         private System.Windows.Forms.Label Prompt10;
         private System.Windows.Forms.TextBox LaunchFlags;
+        private System.Windows.Forms.CheckBox FindBackupSource;
     }
 }
