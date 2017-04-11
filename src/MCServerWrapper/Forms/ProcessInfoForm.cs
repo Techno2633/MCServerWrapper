@@ -259,222 +259,262 @@ namespace MCServerWrapper.Forms
 
         public void UpdateOverviewCPU(float[] processorTime, float[] privilegedTime, float[] userTime)
         {
-            if (OverviewCpuChart.InvokeRequired || OverviewCpuUsageLbl.InvokeRequired || OverviewCpuPrivilegedUsageLbl.InvokeRequired || OverviewCpuUserUsageLbl.InvokeRequired)
+            try
             {
-                OverviewCpuChart.Invoke((MethodInvoker)(() => OverviewCpuChart.Series[0].Points.DataBindXY(XValues, processorTime)));
-                OverviewCpuUsageLbl.Invoke((MethodInvoker)(() => OverviewCpuUsageLbl.Text = "Total CPU Usage: " + (int)(processorTime[0] * 100) + "%"));
-                OverviewCpuPrivilegedUsageLbl.Invoke((MethodInvoker)(() => OverviewCpuPrivilegedUsageLbl.Text = "Privileged CPU Usage: " + (int)(privilegedTime[0] * 100) + "%"));
-                OverviewCpuUserUsageLbl.Invoke((MethodInvoker)(() => OverviewCpuUserUsageLbl.Text = "User CPU Usage: " + (int)(userTime[0] * 100) + "%"));
+                if (OverviewCpuChart.InvokeRequired || OverviewCpuUsageLbl.InvokeRequired || OverviewCpuPrivilegedUsageLbl.InvokeRequired || OverviewCpuUserUsageLbl.InvokeRequired)
+                {
+                    OverviewCpuChart.Invoke((MethodInvoker)(() => OverviewCpuChart.Series[0].Points.DataBindXY(XValues, processorTime)));
+                    OverviewCpuUsageLbl.Invoke((MethodInvoker)(() => OverviewCpuUsageLbl.Text = "Total CPU Usage: " + (int)(processorTime[0] * 100) + "%"));
+                    OverviewCpuPrivilegedUsageLbl.Invoke((MethodInvoker)(() => OverviewCpuPrivilegedUsageLbl.Text = "Privileged CPU Usage: " + (int)(privilegedTime[0] * 100) + "%"));
+                    OverviewCpuUserUsageLbl.Invoke((MethodInvoker)(() => OverviewCpuUserUsageLbl.Text = "User CPU Usage: " + (int)(userTime[0] * 100) + "%"));
+                }
+                else
+                {
+                    OverviewCpuChart.Series[0].Points.DataBindXY(XValues, processorTime);
+                    OverviewCpuUsageLbl.Text = "Total CPU Usage: " + (int)(processorTime[0] * 100) + "%";
+                    OverviewCpuPrivilegedUsageLbl.Text = "Privileged CPU Usage: " + (int)(privilegedTime[0] * 100) + "%";
+                    OverviewCpuUserUsageLbl.Text = "User CPU Usage: " + (int)(userTime[0] * 100) + "%";
+                }
             }
-            else
-            {
-                OverviewCpuChart.Series[0].Points.DataBindXY(XValues, processorTime);
-                OverviewCpuUsageLbl.Text = "Total CPU Usage: " + (int)(processorTime[0] * 100) + "%";
-                OverviewCpuPrivilegedUsageLbl.Text = "Privileged CPU Usage: " + (int)(privilegedTime[0] * 100) + "%";
-                OverviewCpuUserUsageLbl.Text = "User CPU Usage: " + (int)(userTime[0] * 100) + "%";
-            }
+            catch { }
         }
 
         public void UpdateOverviewMemory(float[] workingSetPrivate, float[] workingSetPeak, float[] workingSet)
         {
-            if (OverviewMemChart.InvokeRequired || OverviewMemoryWSPrivateLbl.InvokeRequired || OverviewMemoryWSPeakLbl.InvokeRequired || OverviewMemoryWSLbl.InvokeRequired)
+            try
             {
-                OverviewMemChart.Invoke((MethodInvoker)(() =>
+                if (OverviewMemChart.InvokeRequired || OverviewMemoryWSPrivateLbl.InvokeRequired || OverviewMemoryWSPeakLbl.InvokeRequired || OverviewMemoryWSLbl.InvokeRequired)
+                {
+                    OverviewMemChart.Invoke((MethodInvoker)(() =>
+                    {
+                        OverviewMemChart.Series[2].Points.DataBindXY(XValues, workingSetPrivate);
+                        OverviewMemChart.Series[1].Points.DataBindXY(XValues, workingSetPeak);
+                        OverviewMemChart.Series[0].Points.DataBindXY(XValues, workingSet);
+                    }));
+                    OverviewMemoryWSPrivateLbl.Invoke((MethodInvoker)(() => OverviewMemoryWSPrivateLbl.Text = "Private Working Set: " + (int)workingSetPrivate[0] + "MB"));
+                    OverviewMemoryWSPeakLbl.Invoke((MethodInvoker)(() => OverviewMemoryWSPeakLbl.Text = "Working Set Peak: " + (int)workingSetPeak[0] + "MB"));
+                    OverviewMemoryWSLbl.Invoke((MethodInvoker)(() => OverviewMemoryWSLbl.Text = "Working Set: " + (int)workingSet[0] + "MB"));
+                }
+                else
                 {
                     OverviewMemChart.Series[2].Points.DataBindXY(XValues, workingSetPrivate);
                     OverviewMemChart.Series[1].Points.DataBindXY(XValues, workingSetPeak);
                     OverviewMemChart.Series[0].Points.DataBindXY(XValues, workingSet);
-                }));
-                OverviewMemoryWSPrivateLbl.Invoke((MethodInvoker)(() => OverviewMemoryWSPrivateLbl.Text = "Private Working Set: " + (int)workingSetPrivate[0] + "MB"));
-                OverviewMemoryWSPeakLbl.Invoke((MethodInvoker)(() => OverviewMemoryWSPeakLbl.Text = "Working Set Peak: " + (int)workingSetPeak[0] + "MB"));
-                OverviewMemoryWSLbl.Invoke((MethodInvoker)(() => OverviewMemoryWSLbl.Text = "Working Set: " + (int)workingSet[0] + "MB"));
+                    OverviewMemoryWSPrivateLbl.Text = "Private Working Set: " + (int)workingSetPrivate[0] + "MB";
+                    OverviewMemoryWSPeakLbl.Text = "Working Set Peak: " + (int)workingSetPeak[0] + "MB";
+                    OverviewMemoryWSLbl.Text = "Working Set: " + (int)workingSet[0] + "MB";
+                }
             }
-            else
-            {
-                OverviewMemChart.Series[2].Points.DataBindXY(XValues, workingSetPrivate);
-                OverviewMemChart.Series[1].Points.DataBindXY(XValues, workingSetPeak);
-                OverviewMemChart.Series[0].Points.DataBindXY(XValues, workingSet);
-                OverviewMemoryWSPrivateLbl.Text = "Private Working Set: " + (int)workingSetPrivate[0] + "MB";
-                OverviewMemoryWSPeakLbl.Text = "Working Set Peak: " + (int)workingSetPeak[0] + "MB";
-                OverviewMemoryWSLbl.Text = "Working Set: " + (int)workingSet[0] + "MB";
-            }
+            catch { }
         }
 
         public void UpdateOverviewIO(float[] read, float[] write)
         {
-            if (OverviewIoChart.InvokeRequired || OverviewIoReadLbl.InvokeRequired || OverviewIoWriteLbl.InvokeRequired)
+            try
             {
-                OverviewIoChart.Invoke((MethodInvoker)(() =>
+                if (OverviewIoChart.InvokeRequired || OverviewIoReadLbl.InvokeRequired || OverviewIoWriteLbl.InvokeRequired)
+                {
+                    OverviewIoChart.Invoke((MethodInvoker)(() =>
+                    {
+                        OverviewIoChart.Series[0].Points.DataBindXY(XValues, read);
+                        OverviewIoChart.Series[1].Points.DataBindXY(XValues, write);
+                    }));
+                    OverviewIoReadLbl.Invoke((MethodInvoker)(() => OverviewIoReadLbl.Text = "Read: " + (int)read[0] + "KB"));
+                    OverviewIoWriteLbl.Invoke((MethodInvoker)(() => OverviewIoWriteLbl.Text = "Write: " + (int)write[0] + "KB"));
+                }
+                else
                 {
                     OverviewIoChart.Series[0].Points.DataBindXY(XValues, read);
                     OverviewIoChart.Series[1].Points.DataBindXY(XValues, write);
-                }));
-                OverviewIoReadLbl.Invoke((MethodInvoker)(() => OverviewIoReadLbl.Text = "Read: " + (int)read[0] + "KB"));
-                OverviewIoWriteLbl.Invoke((MethodInvoker)(() => OverviewIoWriteLbl.Text = "Write: " + (int)write[0] + "KB"));
+                    OverviewIoReadLbl.Text = "Read: " + (int)read[0] + "KB";
+                    OverviewIoWriteLbl.Text = "Write: " + (int)write[0] + "KB";
+                }
             }
-            else
-            {
-                OverviewIoChart.Series[0].Points.DataBindXY(XValues, read);
-                OverviewIoChart.Series[1].Points.DataBindXY(XValues, write);
-                OverviewIoReadLbl.Text = "Read: " + (int)read[0] + "KB";
-                OverviewIoWriteLbl.Text = "Write: " + (int)write[0] + "KB";
-            }
+            catch { }
         }
 
         public void UpdateOverviewInfo(float creatingProcessID, float elapsedTime, float handleCount, float idProcess, float pageFaults, float priorityBase, float privateBytes, float threadCount)
         {
-            if (OverviewInfoCreatingProcessIDLbl.InvokeRequired || OverviewInfoElapsedTimeLbl.InvokeRequired || OverviewInfoHandleCountLbl.InvokeRequired || OverviewInfoIDProcessLbl.InvokeRequired || OverviewInfoPageFaultsLbl.InvokeRequired || OverviewInfoPriorityBaseLbl.InvokeRequired || OverviewInfoPrivateBytesLbl.InvokeRequired || OverviewInfoThreadCountLbl.InvokeRequired)
+            try
             {
-                OverviewInfoCreatingProcessIDLbl.Invoke((MethodInvoker)(() => OverviewInfoCreatingProcessIDLbl.Text = "Creating Process ID: " + creatingProcessID));
-                OverviewInfoElapsedTimeLbl.Invoke((MethodInvoker)(() => OverviewInfoElapsedTimeLbl.Text = "Elapsed Time: " + elapsedTime));
-                OverviewInfoHandleCountLbl.Invoke((MethodInvoker)(() => OverviewInfoHandleCountLbl.Text = "Handle Count: " + handleCount));
-                OverviewInfoHandleCountLbl.Invoke((MethodInvoker)(() => OverviewInfoIDProcessLbl.Text = "Process ID: " + idProcess));
-                OverviewInfoPageFaultsLbl.Invoke((MethodInvoker)(() => OverviewInfoPageFaultsLbl.Text = "Page Faults: " + pageFaults));
-                OverviewInfoPriorityBaseLbl.Invoke((MethodInvoker)(() => OverviewInfoPriorityBaseLbl.Text = "Priority Base: " + priorityBase));
-                OverviewInfoPrivateBytesLbl.Invoke((MethodInvoker)(() => OverviewInfoPrivateBytesLbl.Text = "Private Bytes: " + privateBytes.ToString("#")));
-                OverviewInfoThreadCountLbl.Invoke((MethodInvoker)(() => OverviewInfoThreadCountLbl.Text = "Thread Count: " + threadCount));
+                if (OverviewInfoCreatingProcessIDLbl.InvokeRequired || OverviewInfoElapsedTimeLbl.InvokeRequired || OverviewInfoHandleCountLbl.InvokeRequired || OverviewInfoIDProcessLbl.InvokeRequired || OverviewInfoPageFaultsLbl.InvokeRequired || OverviewInfoPriorityBaseLbl.InvokeRequired || OverviewInfoPrivateBytesLbl.InvokeRequired || OverviewInfoThreadCountLbl.InvokeRequired)
+                {
+                    OverviewInfoCreatingProcessIDLbl.Invoke((MethodInvoker)(() => OverviewInfoCreatingProcessIDLbl.Text = "Creating Process ID: " + creatingProcessID));
+                    OverviewInfoElapsedTimeLbl.Invoke((MethodInvoker)(() => OverviewInfoElapsedTimeLbl.Text = "Elapsed Time: " + elapsedTime));
+                    OverviewInfoHandleCountLbl.Invoke((MethodInvoker)(() => OverviewInfoHandleCountLbl.Text = "Handle Count: " + handleCount));
+                    OverviewInfoHandleCountLbl.Invoke((MethodInvoker)(() => OverviewInfoIDProcessLbl.Text = "Process ID: " + idProcess));
+                    OverviewInfoPageFaultsLbl.Invoke((MethodInvoker)(() => OverviewInfoPageFaultsLbl.Text = "Page Faults: " + pageFaults));
+                    OverviewInfoPriorityBaseLbl.Invoke((MethodInvoker)(() => OverviewInfoPriorityBaseLbl.Text = "Priority Base: " + priorityBase));
+                    OverviewInfoPrivateBytesLbl.Invoke((MethodInvoker)(() => OverviewInfoPrivateBytesLbl.Text = "Private Bytes: " + privateBytes.ToString("#")));
+                    OverviewInfoThreadCountLbl.Invoke((MethodInvoker)(() => OverviewInfoThreadCountLbl.Text = "Thread Count: " + threadCount));
+                }
+                else
+                {
+                    OverviewInfoCreatingProcessIDLbl.Text = "Creating Process ID: " + creatingProcessID;
+                    OverviewInfoElapsedTimeLbl.Text = "Elapsed Time: " + elapsedTime;
+                    OverviewInfoHandleCountLbl.Text = "Handle Count: " + handleCount;
+                    OverviewInfoIDProcessLbl.Text = "Process ID: " + idProcess;
+                    OverviewInfoPageFaultsLbl.Text = "Page Faults: " + pageFaults;
+                    OverviewInfoPriorityBaseLbl.Text = "Priority Base: " + priorityBase;
+                    OverviewInfoPrivateBytesLbl.Text = "Private Bytes: " + privateBytes.ToString("f");
+                    OverviewInfoThreadCountLbl.Text = "Thread Count: " + threadCount;
+                }
             }
-            else
-            {
-                OverviewInfoCreatingProcessIDLbl.Text = "Creating Process ID: " + creatingProcessID;
-                OverviewInfoElapsedTimeLbl.Text = "Elapsed Time: " + elapsedTime;
-                OverviewInfoHandleCountLbl.Text = "Handle Count: " + handleCount;
-                OverviewInfoIDProcessLbl.Text = "Process ID: " + idProcess;
-                OverviewInfoPageFaultsLbl.Text = "Page Faults: " + pageFaults;
-                OverviewInfoPriorityBaseLbl.Text = "Priority Base: " + priorityBase;
-                OverviewInfoPrivateBytesLbl.Text = "Private Bytes: " + privateBytes.ToString("f");
-                OverviewInfoThreadCountLbl.Text = "Thread Count: " + threadCount;
-            }
+            catch { }
         }
 
         public void UpdateMemoryWorkingSet(float[] workingSetPrivate, float[] workingSetPeak, float[] workingSet)
         {
-            if (MemoryWorkingSetChart.InvokeRequired || MemoryWSPrivateLbl.InvokeRequired || MemoryWSPeakLbl.InvokeRequired || MemoryWSLbl.InvokeRequired)
+            try
             {
-                MemoryWorkingSetChart.Invoke((MethodInvoker)(() =>
+                if (MemoryWorkingSetChart.InvokeRequired || MemoryWSPrivateLbl.InvokeRequired || MemoryWSPeakLbl.InvokeRequired || MemoryWSLbl.InvokeRequired)
+                {
+                    MemoryWorkingSetChart.Invoke((MethodInvoker)(() =>
+                    {
+                        MemoryWorkingSetChart.Series[0].Points.DataBindXY(XValues, workingSetPrivate);
+                        MemoryWorkingSetChart.Series[1].Points.DataBindXY(XValues, workingSetPeak);
+                        MemoryWorkingSetChart.Series[2].Points.DataBindXY(XValues, workingSet);
+                    }));
+                    MemoryWSPrivateLbl.Invoke((MethodInvoker)(() => MemoryWSPrivateLbl.Text = "Private Working Set: " + (int)workingSetPrivate[0] + "MB"));
+                    MemoryWSPeakLbl.Invoke((MethodInvoker)(() => MemoryWSPeakLbl.Text = "Working Set Peak: " + (int)workingSetPeak[0] + "MB"));
+                    MemoryWSLbl.Invoke((MethodInvoker)(() => MemoryWSLbl.Text = "Working Set: " + (int)workingSet[0] + "MB"));
+                }
+                else
                 {
                     MemoryWorkingSetChart.Series[0].Points.DataBindXY(XValues, workingSetPrivate);
                     MemoryWorkingSetChart.Series[1].Points.DataBindXY(XValues, workingSetPeak);
                     MemoryWorkingSetChart.Series[2].Points.DataBindXY(XValues, workingSet);
-                }));
-                MemoryWSPrivateLbl.Invoke((MethodInvoker)(() => MemoryWSPrivateLbl.Text = "Private Working Set: " + (int)workingSetPrivate[0] + "MB"));
-                MemoryWSPeakLbl.Invoke((MethodInvoker)(() => MemoryWSPeakLbl.Text = "Working Set Peak: " + (int)workingSetPeak[0] + "MB"));
-                MemoryWSLbl.Invoke((MethodInvoker)(() => MemoryWSLbl.Text = "Working Set: " + (int)workingSet[0] + "MB"));
+                    MemoryWSPrivateLbl.Text = "Private Working Set: " + (int)workingSetPrivate[0] + "MB";
+                    MemoryWSPeakLbl.Text = "Working Set Peak: " + (int)workingSetPeak[0] + "MB";
+                    MemoryWSLbl.Text = "Working Set: " + (int)workingSet[0] + "MB";
+                }
             }
-            else
-            {
-                MemoryWorkingSetChart.Series[0].Points.DataBindXY(XValues, workingSetPrivate);
-                MemoryWorkingSetChart.Series[1].Points.DataBindXY(XValues, workingSetPeak);
-                MemoryWorkingSetChart.Series[2].Points.DataBindXY(XValues, workingSet);
-                MemoryWSPrivateLbl.Text = "Private Working Set: " + (int)workingSetPrivate[0] + "MB";
-                MemoryWSPeakLbl.Text = "Working Set Peak: " + (int)workingSetPeak[0] + "MB";
-                MemoryWSLbl.Text = "Working Set: " + (int)workingSet[0] + "MB";
-            }
+            catch { }
         }
 
         public void UpdateMemoryPageFileList(float[] pageFile, float[] pageFilePeak)
         {
-            if (MemoryPageFileChart.InvokeRequired || MemoryPFLbl.InvokeRequired || MemoryPFPeakLbl.InvokeRequired)
+            try
             {
-                MemoryPageFileChart.Invoke((MethodInvoker)(() =>
+                if (MemoryPageFileChart.InvokeRequired || MemoryPFLbl.InvokeRequired || MemoryPFPeakLbl.InvokeRequired)
+                {
+                    MemoryPageFileChart.Invoke((MethodInvoker)(() =>
+                    {
+                        MemoryPageFileChart.Series[0].Points.DataBindXY(XValues, pageFile);
+                        MemoryPageFileChart.Series[1].Points.DataBindXY(XValues, pageFilePeak);
+                    }));
+                    MemoryPFLbl.Invoke((MethodInvoker)(() => MemoryPFLbl.Text = "Page File: " + (int)pageFile[0] + "MB"));
+                    MemoryPFPeakLbl.Invoke((MethodInvoker)(() => MemoryPFPeakLbl.Text = "Page File Peak: " + (int)pageFilePeak[0] + "MB"));
+                }
+                else
                 {
                     MemoryPageFileChart.Series[0].Points.DataBindXY(XValues, pageFile);
                     MemoryPageFileChart.Series[1].Points.DataBindXY(XValues, pageFilePeak);
-                }));
-                MemoryPFLbl.Invoke((MethodInvoker)(() => MemoryPFLbl.Text = "Page File: " + (int)pageFile[0] + "MB"));
-                MemoryPFPeakLbl.Invoke((MethodInvoker)(() => MemoryPFPeakLbl.Text = "Page File Peak: " + (int)pageFilePeak[0] + "MB"));
+                    MemoryPFLbl.Text = "Page File: " + (int)pageFile[0] + "MB";
+                    MemoryPFPeakLbl.Text = "Page File Peak: " + (int)pageFilePeak[0] + "MB";
+                }
             }
-            else
-            {
-                MemoryPageFileChart.Series[0].Points.DataBindXY(XValues, pageFile);
-                MemoryPageFileChart.Series[1].Points.DataBindXY(XValues, pageFilePeak);
-                MemoryPFLbl.Text = "Page File: " + (int)pageFile[0] + "MB";
-                MemoryPFPeakLbl.Text = "Page File Peak: " + (int)pageFilePeak[0] + "MB";
-            }
+            catch { }
         }
 
         public void UpdateMemoryVirtual(float[] virtualBytes, float[] virtualBytesPeak)
         {
-            if (MemoryVirtualChart.InvokeRequired || MemoryVirtualLbl.InvokeRequired || MemoryVirtualPeakLbl.InvokeRequired)
+            try
             {
-                MemoryVirtualChart.Invoke((MethodInvoker)(() =>
+                if (MemoryVirtualChart.InvokeRequired || MemoryVirtualLbl.InvokeRequired || MemoryVirtualPeakLbl.InvokeRequired)
+                {
+                    MemoryVirtualChart.Invoke((MethodInvoker)(() =>
+                    {
+                        MemoryVirtualChart.Series[0].Points.DataBindXY(XValues, virtualBytes);
+                        MemoryVirtualChart.Series[1].Points.DataBindXY(XValues, virtualBytesPeak);
+                    }));
+                    MemoryVirtualLbl.Invoke((MethodInvoker)(() => MemoryVirtualLbl.Text = "Virtual: " + (int)virtualBytes[0] + "MB"));
+                    MemoryVirtualPeakLbl.Invoke((MethodInvoker)(() => MemoryVirtualPeakLbl.Text = "Virtual Peak: " + (int)virtualBytesPeak[0] + "MB"));
+                }
+                else
                 {
                     MemoryVirtualChart.Series[0].Points.DataBindXY(XValues, virtualBytes);
                     MemoryVirtualChart.Series[1].Points.DataBindXY(XValues, virtualBytesPeak);
-                }));
-                MemoryVirtualLbl.Invoke((MethodInvoker)(() => MemoryVirtualLbl.Text = "Virtual: " + (int)virtualBytes[0] + "MB"));
-                MemoryVirtualPeakLbl.Invoke((MethodInvoker)(() => MemoryVirtualPeakLbl.Text = "Virtual Peak: " + (int)virtualBytesPeak[0] + "MB"));
+                    MemoryVirtualLbl.Text = "Virtual: " + (int)virtualBytes[0] + "MB";
+                    MemoryVirtualPeakLbl.Text = "Virtual Peak: " + (int)virtualBytesPeak[0] + "MB";
+                }
             }
-            else
-            {
-                MemoryVirtualChart.Series[0].Points.DataBindXY(XValues, virtualBytes);
-                MemoryVirtualChart.Series[1].Points.DataBindXY(XValues, virtualBytesPeak);
-                MemoryVirtualLbl.Text = "Virtual: " + (int)virtualBytes[0] + "MB";
-                MemoryVirtualPeakLbl.Text = "Virtual Peak: " + (int)virtualBytesPeak[0] + "MB";
-            }
+            catch { }
         }
 
         public void UpdateMemoryPool(float[] poolPaged, float[] poolNonpaged)
         {
-            if (MemoryPoolChart.InvokeRequired || MemoryPoolPagedLbl.InvokeRequired || MemoryPoolNonpagedLbl.InvokeRequired)
+            try
             {
-                MemoryPoolChart.Invoke((MethodInvoker)(() =>
+                if (MemoryPoolChart.InvokeRequired || MemoryPoolPagedLbl.InvokeRequired || MemoryPoolNonpagedLbl.InvokeRequired)
+                {
+                    MemoryPoolChart.Invoke((MethodInvoker)(() =>
+                    {
+                        MemoryPoolChart.Series[0].Points.DataBindXY(XValues, poolPaged);
+                        MemoryPoolChart.Series[1].Points.DataBindXY(XValues, poolNonpaged);
+                    }));
+                    MemoryPoolPagedLbl.Invoke((MethodInvoker)(() => MemoryPoolPagedLbl.Text = "Paged Pool: " + (int)poolPaged[0] + "KB"));
+                    MemoryPoolNonpagedLbl.Invoke((MethodInvoker)(() => MemoryPoolNonpagedLbl.Text = "Nonpaged Pool: " + (int)poolNonpaged[0] + "KB"));
+                }
+                else
                 {
                     MemoryPoolChart.Series[0].Points.DataBindXY(XValues, poolPaged);
                     MemoryPoolChart.Series[1].Points.DataBindXY(XValues, poolNonpaged);
-                }));
-                MemoryPoolPagedLbl.Invoke((MethodInvoker)(() => MemoryPoolPagedLbl.Text = "Paged Pool: " + (int)poolPaged[0] + "KB"));
-                MemoryPoolNonpagedLbl.Invoke((MethodInvoker)(() => MemoryPoolNonpagedLbl.Text = "Nonpaged Pool: " + (int)poolNonpaged[0] + "KB"));
+                    MemoryPoolPagedLbl.Text = "Paged Pool: " + (int)poolPaged[0] + "KB";
+                    MemoryPoolNonpagedLbl.Text = "Nonpaged Pool: " + (int)poolNonpaged[0] + "KB";
+                }
             }
-            else
-            {
-                MemoryPoolChart.Series[0].Points.DataBindXY(XValues, poolPaged);
-                MemoryPoolChart.Series[1].Points.DataBindXY(XValues, poolNonpaged);
-                MemoryPoolPagedLbl.Text = "Paged Pool: " + (int)poolPaged[0] + "KB";
-                MemoryPoolNonpagedLbl.Text = "Nonpaged Pool: " + (int)poolNonpaged[0] + "KB";
-            }
+            catch { }
         }
 
         public void UpdateIOReadWrite(float[] read, float[] write)
         {
-            if (IOReadWriteChart.InvokeRequired || IOReadLbl.InvokeRequired || IOWriteLbl.InvokeRequired)
+            try
             {
-                IOReadWriteChart.Invoke((MethodInvoker)(() =>
+                if (IOReadWriteChart.InvokeRequired || IOReadLbl.InvokeRequired || IOWriteLbl.InvokeRequired)
+                {
+                    IOReadWriteChart.Invoke((MethodInvoker)(() =>
+                    {
+                        IOReadWriteChart.Series[0].Points.DataBindXY(XValues, read);
+                        IOReadWriteChart.Series[1].Points.DataBindXY(XValues, write);
+                    }));
+                    IOReadLbl.Invoke((MethodInvoker)(() => IOReadLbl.Text = "Read: " + (int)read[0] + "KB"));
+                    IOWriteLbl.Invoke((MethodInvoker)(() => IOWriteLbl.Text = "Write: " + (int)write[0] + "KB"));
+                }
+                else
                 {
                     IOReadWriteChart.Series[0].Points.DataBindXY(XValues, read);
                     IOReadWriteChart.Series[1].Points.DataBindXY(XValues, write);
-                }));
-                IOReadLbl.Invoke((MethodInvoker)(() => IOReadLbl.Text = "Read: " + (int)read[0] + "KB"));
-                IOWriteLbl.Invoke((MethodInvoker)(() => IOWriteLbl.Text = "Write: " + (int)write[0] + "KB"));
+                    IOReadLbl.Text = "Read: " + (int)read[0] + "KB";
+                    IOWriteLbl.Text = "Write: " + (int)write[0] + "KB";
+                }
             }
-            else
-            {
-                IOReadWriteChart.Series[0].Points.DataBindXY(XValues, read);
-                IOReadWriteChart.Series[1].Points.DataBindXY(XValues, write);
-                IOReadLbl.Text = "Read: " + (int)read[0] + "KB";
-                IOWriteLbl.Text = "Write: " + (int)write[0] + "KB";
-            }
+            catch { }
         }
 
         public void UpdateIODataOther(float[] data, float[] other)
         {
-            if (IODataOtherChart.InvokeRequired || IODataLbl.InvokeRequired || IOOtherLbl.InvokeRequired)
+            try
             {
-                IODataOtherChart.Invoke((MethodInvoker)(() =>
+                if (IODataOtherChart.InvokeRequired || IODataLbl.InvokeRequired || IOOtherLbl.InvokeRequired)
+                {
+                    IODataOtherChart.Invoke((MethodInvoker)(() =>
+                    {
+                        IODataOtherChart.Series[0].Points.DataBindXY(XValues, data);
+                        IODataOtherChart.Series[1].Points.DataBindXY(XValues, other);
+                    }));
+                    IODataLbl.Invoke((MethodInvoker)(() => IODataLbl.Text = "Data: " + (int)data[0] + "KB"));
+                    IOOtherLbl.Invoke((MethodInvoker)(() => IOOtherLbl.Text = "Other: " + (int)other[0] + "KB"));
+                }
+                else
                 {
                     IODataOtherChart.Series[0].Points.DataBindXY(XValues, data);
                     IODataOtherChart.Series[1].Points.DataBindXY(XValues, other);
-                }));
-                IODataLbl.Invoke((MethodInvoker)(() => IODataLbl.Text = "Data: " + (int)data[0] + "KB"));
-                IOOtherLbl.Invoke((MethodInvoker)(() => IOOtherLbl.Text = "Other: " + (int)other[0] + "KB"));
+                    IODataLbl.Text = "Data: " + (int)data[0] + "KB";
+                    IOOtherLbl.Text = "Other: " + (int)other[0] + "KB";
+                }
             }
-            else
-            {
-                IODataOtherChart.Series[0].Points.DataBindXY(XValues, data);
-                IODataOtherChart.Series[1].Points.DataBindXY(XValues, other);
-                IODataLbl.Text = "Data: " + (int)data[0] + "KB";
-                IOOtherLbl.Text = "Other: " + (int)other[0] + "KB";
-            }
+            catch { }
         }
 
         private void ProcessInfoForm_Resize(object sender, EventArgs e)
