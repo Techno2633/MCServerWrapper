@@ -1,19 +1,16 @@
-﻿using CompressionLib;
-using MCServerWrapper.Forms;
-using MCServerWrapperLib.Classes;
-using MCServerWrapperLib.Models;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Collections.Generic;
+using CompressionLib;
+using MCServerWrapper.Forms;
+using MCServerWrapperLib.Models;
+using Newtonsoft.Json;
 using Timer = System.Timers.Timer;
 
 namespace MCServerWrapper.Classes
@@ -35,6 +32,8 @@ namespace MCServerWrapper.Classes
         private Timer FormUpdateTimer;
 
         private const int LIST_MAX = 181;
+
+        private bool stopping;
 
         private PerformanceCounter PrivilegedTime;
         private PerformanceCounter ProcessorTime;
@@ -80,6 +79,8 @@ namespace MCServerWrapper.Classes
 
         public ServerProgram()
         {
+            stopping = false;
+
             handler = new ConsoleEventDelegate((eventType) =>
             {
                 if (eventType == 2)
@@ -271,13 +272,14 @@ namespace MCServerWrapper.Classes
                 {
                     process.StandardInput.WriteLine("save-off");
                     process.StandardInput.WriteLine("say Starting Backup. Server may lag for a bit.");
+                    Exception exception;
                     int counter = 0;
-                    while (!Backup())
+                    while (!Backup(out exception))
                     {
                         counter++;
                         if (counter > 19)
                         {
-                            throw new Exception("Unable to complete backup after 20 tries");
+                            throw new Exception("Unable to complete backup after 20 tries", exception);
                         }
                     }
                     process.StandardInput.WriteLine($"say Backup Successful. Next backup in {settings.BackupInterval} minutes");
@@ -299,6 +301,7 @@ namespace MCServerWrapper.Classes
 
                 try
                 {
+                    //gets newest data
                     float privilegedTime = PrivilegedTime.NextValue();
                     float processorTime = ProcessorTime.NextValue();
                     float userTime = UserTime.NextValue();
@@ -324,6 +327,7 @@ namespace MCServerWrapper.Classes
                     float workingSetPrivate = WorkingSetPrivate.NextValue();
                     float workingSetPeak = WorkingSetPeak.NextValue();
 
+                    //adds newest data to the lists
                     ProcessorTimeList.Insert(0, processorTime / Environment.ProcessorCount / 100f);
                     PrivilegedTimeList.Insert(0, privilegedTime / Environment.ProcessorCount / 100f);
                     UserTimeList.Insert(0, userTime / Environment.ProcessorCount / 100f);
@@ -344,6 +348,7 @@ namespace MCServerWrapper.Classes
                     PoolPagedList.Insert(0, poolPagedBytes / 1024);
                     PoolNonpagedList.Insert(0, poolNonpagedBytes / 1024);
 
+                    //sorten lists to max size
                     while (ProcessorTimeList.Count > LIST_MAX)
                         ProcessorTimeList.RemoveAt(LIST_MAX);
                     while (PrivilegedTimeList.Count > LIST_MAX)
@@ -386,6 +391,7 @@ namespace MCServerWrapper.Classes
                     if (processInfoForm.IsDisposed)
                         return;
 
+                    //pass info to form
                     processInfoForm.UpdateOverviewCPU(ProcessorTimeList.ToArray(), PrivilegedTimeList.ToArray(), UserTimeList.ToArray());
                     processInfoForm.UpdateOverviewMemory(WorkingSetPrivateList.ToArray(), WorkingSetPeakList.ToArray(), WorkingSetList.ToArray());
                     processInfoForm.UpdateOverviewIO(IOReadList.ToArray(), IOWriteList.ToArray());
@@ -399,67 +405,6 @@ namespace MCServerWrapper.Classes
                 }
                 catch { }
             };
-
-            //Thread that runs the connection between the wrapper and the server
-            //Thread MainProcess = new Thread(() =>
-            //{
-            //    //Set priority and initalize threads
-            //    const ThreadPriority ioPriority = ThreadPriority.AboveNormal;
-            //    Thread outputThread = new Thread(outputReader) { Name = "ChildIO Output", Priority = ioPriority, IsBackground = true };
-            //    Thread errorThread = new Thread(errorReader) { Name = "ChildIO Error", Priority = ioPriority, IsBackground = true };
-            //    Thread inputThread = new Thread(inputReader) { Name = "ChildIO Input", Priority = ioPriority, IsBackground = true };
-
-            //    //Start the IO threads
-            //    outputThread.Start(process);
-            //    errorThread.Start(process);
-            //    inputThread.Start(process);
-
-            //    //Signal to end the application
-            //    ManualResetEvent stopApp = new ManualResetEvent(false);
-
-            //    //Enables the exited event and set the stopApp signal on exited
-            //    process.EnableRaisingEvents = true;
-            //    process.Exited += (e, sender) => { stopApp.Set(); };
-
-            //    //Wait for the child app to stop
-            //    stopApp.WaitOne();
-
-            //    //Write output
-            //    ConsoleWriter.WriteLine("Process ended... shutting down host", consoleColor);
-
-            //    //closes and disposes of the form
-            //    //if (!processInfoForm.IsDisposed)
-            //    //{
-            //    //    try
-            //    //    {
-            //    //        processInfoForm.Close();
-            //    //    }
-            //    //    catch { }
-            //    //    finally
-            //    //    {
-            //    //        processInfoForm.Dispose();
-            //    //    }
-            //    //}
-
-            //    //Stops passthrough
-            //    Thread.Sleep(1000);
-            //    if (outputThread.IsAlive)
-            //        outputThread.Abort();
-
-            //    if (errorThread.IsAlive)
-            //        errorThread.Abort();
-
-            //    if (inputThread.IsAlive)
-            //        inputThread.Abort();
-
-            //    //close wrapper
-            //    Close(8);
-            //})
-            //{
-            //    IsBackground = true,
-            //    Name = "ServerProcess",
-            //    Priority = ThreadPriority.Highest
-            //};
 
             //Form Thread
             Action FormStartupAction = new Action(() =>
@@ -484,13 +429,14 @@ namespace MCServerWrapper.Classes
                 try
                 {
                     ConsoleWriter.WriteLine("Starting pre-start backup", consoleColor);
+                    Exception exception;
                     int counter = 0;
-                    while (!Backup())
+                    while (!Backup(out exception))
                     {
                         counter++;
                         if (counter > 19)
                         {
-                            throw new Exception("Unable to complete backup after 20 tries");
+                            throw new Exception("Unable to complete backup after 20 tries", exception);
                         }
                     }
                 }
@@ -530,8 +476,6 @@ namespace MCServerWrapper.Classes
             WorkingSetPrivate = new PerformanceCounter("Process", "Working Set - Private", process.ProcessName, true);
             WorkingSetPeak = new PerformanceCounter("Process", "Working Set Peak", process.ProcessName, true);
 
-            //MainProcess.Start();
-
             //Set priority and initalize threads
             const ThreadPriority ioPriority = ThreadPriority.AboveNormal;
             Thread outputThread = new Thread(outputReader) { Name = "ChildIO Output", Priority = ioPriority, IsBackground = true };
@@ -561,38 +505,50 @@ namespace MCServerWrapper.Classes
             if (settings.AutoFindBackupSource)
             {
                 //ConsoleWriter.WriteLine("Please wait until the post-start backup has finished before closing to prevent backup corruption", consoleColor);
-                Task.Run(() => AutoFindBackupSource());
+                Task.Run(async () => 
+                {
+                    Thread.CurrentThread.Name = "AutoSource";
+                    await Task.Delay(10000);
+                    AutoFindBackupSource();
 
-                //Thread.Sleep(20000);
-                //try
-                //{
-                //    ConsoleWriter.WriteLine("Starting post-start backup", consoleColor);
-                //    process.StandardInput.WriteLine("save-off");
-                //    process.StandardInput.WriteLine("say Starting Backup. Server may lag for a bit.");
-                //    int counter = 0;
-                //    while (!Backup())
-                //    {
-                //        counter++;
-                //        if (counter > 19)
-                //        {
-                //            throw new Exception("Unable to complete backup after 20 tries");
-                //        }
-                //    }
-                //    process.StandardInput.WriteLine($"say Backup Successful. Next backup in {settings.BackupInterval - 1} minutes");
-                //}
-                //catch (Exception ex)
-                //{
-                //    process.StandardInput.WriteLine($"say Backup Failed. {ex.Message}.");
-                //    ExceptionPrinter.PrintException(ex, "Error while trying to initialize backup.");
-                //    CleanUp();
-                //}
-                //try { process.StandardInput.WriteLine("save-on"); } catch (Exception ex) { ExceptionPrinter.PrintException(ex, "Failed to send \"save-on\" message"); }
+                    await Task.Delay(20000);
+
+                    if (stopping)
+                        return;
+
+                    try
+                    {
+                        ConsoleWriter.WriteLine("Starting post-start backup", consoleColor);
+                        process.StandardInput.WriteLine("save-off");
+                        process.StandardInput.WriteLine("say Starting Backup. Server may lag for a bit.");
+                        Exception exception;
+                        int counter = 0;
+                        while (!Backup(out exception))
+                        {
+                            counter++;
+                            if (counter > 19)
+                            {
+                                throw new Exception("Unable to complete backup after 20 tries", exception);
+                            }
+                        }
+                        process.StandardInput.WriteLine($"say Post-Start Backup Successful. Next backup in about {settings.BackupInterval - 1} minutes");
+                    }
+                    catch (Exception ex)
+                    {
+                        process.StandardInput.WriteLine($"say Backup Failed. {ex.Message}.");
+                        ExceptionPrinter.PrintException(ex, "Error while trying to initialize backup.");
+                        CleanUp();
+                    }
+                    try { process.StandardInput.WriteLine("save-on"); } catch (Exception ex) { ExceptionPrinter.PrintException(ex, "Failed to send \"save-on\" message"); }
+                });
             }
 
             process.WaitForExit();
             stopApp.WaitOne();
 
             ConsoleWriter.WriteLine("Process ended... shutting down host", consoleColor);
+
+            stopping = true;
 
             //stops timers
             BackupTimer.Stop();
@@ -602,7 +558,7 @@ namespace MCServerWrapper.Classes
             FormUpdateTimer.Dispose();
 
             //closes and disposes of the form
-            if (!processInfoForm.IsDisposed)
+            if (processInfoForm != null && !processInfoForm.IsDisposed)
             {
                 try
                 {
@@ -684,10 +640,17 @@ namespace MCServerWrapper.Classes
                         ZipCompressionLevel = settings.ZipCompressionLevel,
                     };
 
+                    if (stopping)
+                        return;
+
                     int counter = 0;
                     while (!SaveSettings(newSettings) && counter < 9)
                     {
                         counter++;
+
+                        if (stopping)
+                            return;
+
                         if (counter >= 9)
                         {
                             throw new Exception("Failed to update Settings.json after 10 tries");
@@ -734,7 +697,7 @@ namespace MCServerWrapper.Classes
             return true;
         }
 
-        private bool Backup()
+        private bool Backup(out Exception exception)
         {
             Stopwatch sw = new Stopwatch();
 
@@ -755,17 +718,18 @@ namespace MCServerWrapper.Classes
             catch (Exception ex)
             {
                 sw.Stop();
-                ExceptionPrinter.PrintException(ex, "Error creating backup.");
                 if (File.Exists(Path.Combine(settings.BackupLocation, zipName)))
                 {
                     File.Delete(Path.Combine(settings.BackupLocation, zipName));
                 }
+                exception = ex;
                 return false;
             }
 
             //Enqueues the new backup into settings for saving
             backups.Enqueue(Path.Combine(settings.BackupLocation, zipName));
 
+            //Removes excess backups
             CleanUp();
 
             //save new backuplist queue to BackupList.json
@@ -780,6 +744,7 @@ namespace MCServerWrapper.Classes
             }
 
             //cleanUp.Wait();
+            exception = null;
             return true;
         }
 
@@ -847,21 +812,6 @@ namespace MCServerWrapper.Classes
                 ExceptionPrinter.PrintException(ex, $"Error launching {@"MCServerWrapperSettingsApp.exe"}");
                 return false;
             }
-        }
-
-        private void CreateConsoleSetings()
-        {
-
-        }
-
-        private void SaveConsoleSettings()
-        {
-            
-        }
-
-        private void LoadConsoleSettings()
-        {
-
         }
 
         private static void passThrough(Stream instream, Stream outstream)
@@ -940,13 +890,6 @@ namespace MCServerWrapper.Classes
                 return;
             }
         }
-
-        //private static void inputReader(Process p)
-        //{
-        //    Process process = p;
-        //    // Pass the standard input into the standard input of the child  
-        //    passThrough(Console.OpenStandardInput(), process.StandardInput.BaseStream);
-        //}
 
         private void Close()
         {

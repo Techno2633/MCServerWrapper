@@ -61,7 +61,6 @@
     <Compile Include="Classes\ConsoleWriter.cs" />
     <Compile Include="Classes\ExceptionPrinter.cs" />
     <Compile Include="Classes\ServerProgram.cs" />
-    <Compile Include="Extensions\Extensions.cs" />
     <Compile Include="Forms\IntegerInput.cs">
       <SubType>Form</SubType>
     </Compile>

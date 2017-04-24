@@ -1,16 +1,9 @@
-﻿using MCServerWrapper.Classes;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
+﻿using System;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using MCServerWrapper.Classes;
+using Newtonsoft.Json;
 
 namespace MCServerWrapper.Forms
 {
@@ -135,16 +128,6 @@ namespace MCServerWrapper.Forms
                 })
             });
             IODataOtherChart.ContextMenu = IODataOtherCM;
-
-            //OverviewCpuChart.ChartAreas[0].AxisX.Maximum = listMax - 1;
-            //OverviewMemChart.ChartAreas[0].AxisX.Maximum = listMax - 1;
-            //OverviewIoChart.ChartAreas[0].AxisX.Maximum = listMax - 1;
-            //MemoryWorkingSetChart.ChartAreas[0].AxisX.Maximum = listMax - 1;
-            //MemoryPageFileChart.ChartAreas[0].AxisX.Maximum = listMax - 1;
-            //MemoryVirtualChart.ChartAreas[0].AxisX.Maximum = listMax - 1;
-            //MemoryPoolChart.ChartAreas[0].AxisX.Maximum = listMax - 1;
-            //IOReadWriteChart.ChartAreas[0].AxisX.Maximum = listMax - 1;
-            //IODataOtherChart.ChartAreas[0].AxisX.Maximum = listMax - 1;
 
             XValues = new int[listMax];
 

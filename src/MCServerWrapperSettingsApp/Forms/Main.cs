@@ -1,16 +1,13 @@
-﻿using MCServerWrapperLib.Classes;
-using MCServerWrapperLib.Models;
-using MCServerWrapperSettingsApp.Classes;
-using Microsoft.VisualBasic.Devices;
-using Newtonsoft.Json;
-using Ookii.Dialogs;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using MCServerWrapperLib.Models;
+using MCServerWrapperSettingsApp.Classes;
+using Newtonsoft.Json;
+using Ookii.Dialogs;
 
 namespace MCServerWrapperSettingsApp.Forms
 {
@@ -68,34 +65,6 @@ namespace MCServerWrapperSettingsApp.Forms
                 ExceptionMessage.PrintException(ex, "Error creating wrapper directory.");
                 return;
             }
-
-            //try
-            //{
-            //    if (!File.Exists(@"Wrapper\Settings.json"))
-            //    {
-            //        string json = JsonConvert.SerializeObject(new Settings(), Formatting.Indented);
-            //        File.WriteAllText(@"Wrapper\Settings.json", json);
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    ExceptionMessage.PrintException(ex, "Failed to create Settings.json");
-            //    return;
-            //}
-
-            //try
-            //{
-            //    if (File.Exists(@"Wrapper\Settings.json"))
-            //    {
-            //        string json = File.ReadAllText(@"Wrapper\Settings.json");
-            //        CurrentSettings = JsonConvert.DeserializeObject<Settings>(json);
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    ExceptionMessage.PrintException(ex, "Failed to read Settings.json");
-            //    return;
-            //}
 
             CurrentSettings = new Settings();
 
